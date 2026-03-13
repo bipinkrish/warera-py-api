@@ -5,3 +5,5 @@ __pycache__/
 build/
 .ruff_cache/
 warera_client.egg-info/
+.mypy_cache
+dist/
