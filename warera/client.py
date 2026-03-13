@@ -132,7 +132,7 @@ class WareraClient:
     # Lifecycle
     # ------------------------------------------------------------------
 
-    async def __aenter__(self) -> "WareraClient":
+    async def __aenter__(self) -> WareraClient:
         await self._http.__aenter__()
         return self
 

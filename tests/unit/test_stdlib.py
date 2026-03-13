@@ -20,8 +20,6 @@ import unittest
 import unittest.mock as mock
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
-from urllib.parse import unquote, urlparse, parse_qs
 
 # ── make the warera package importable without installing ──────────────────
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -85,19 +83,30 @@ tenacity_stub.wait_fixed = lambda s: None
 sys.modules['tenacity'] = tenacity_stub
 
 # ── now import our modules ─────────────────────────────────────────────────
+# ruff: noqa
+from warera._batch import DEFAULT_BATCH_SIZE, BatchSession, fetch_many_by_ids
 from warera._enums import (
-    ArticleType, BattleDirection, BattleFilter,
-    BattleRankingDataType, BattleRankingEntityType, BattleRankingSide,
-    EventType, RankingType, TransactionType, UpgradeType,
+    ArticleType,
+    BattleFilter,
+    BattleRankingDataType,
+    BattleRankingSide,
+    EventType,
+    RankingType,
+    TransactionType,
+    UpgradeType,
 )
 from warera.exceptions import (
-    WareraError, WareraHTTPError, WareraUnauthorizedError,
-    WareraForbiddenError, WareraNotFoundError,
-    WareraRateLimitError, WareraServerError,
-    WareraValidationError, WareraBatchError,
+    WareraBatchError,
+    WareraError,
+    WareraForbiddenError,
+    WareraHTTPError,
+    WareraNotFoundError,
+    WareraRateLimitError,
+    WareraServerError,
+    WareraUnauthorizedError,
+    WareraValidationError,
     _raise_for_status,
 )
-from warera._batch import BatchSession, fetch_many_by_ids, DEFAULT_BATCH_SIZE
 
 
 def run(coro):
@@ -239,8 +248,9 @@ class TestHttpEncoding(unittest.TestCase):
         self.assertEqual(headers["X-API-Key"], "my-secret")
 
     def test_auth_header_absent_when_no_key(self):
-        from warera._http import HttpSession
         import os
+
+        from warera._http import HttpSession
         # Ensure env var isn't set during this test
         old = os.environ.pop("WARERA_API_KEY", None)
         try:
@@ -252,8 +262,9 @@ class TestHttpEncoding(unittest.TestCase):
                 os.environ["WARERA_API_KEY"] = old
 
     def test_api_key_read_from_env(self):
-        from warera._http import HttpSession
         import os
+
+        from warera._http import HttpSession
         os.environ["WARERA_API_KEY"] = "env-key"
         try:
             session = HttpSession(base_url="https://test")
@@ -495,7 +506,7 @@ class _FakePage:
 class TestPagination(unittest.TestCase):
 
     def _make_paginate(self):
-        from warera._pagination import paginate, collect_all
+        from warera._pagination import collect_all, paginate
         return paginate, collect_all
 
     def test_single_page_yields_all_items(self):
@@ -688,8 +699,8 @@ class TestClientAssembly(unittest.TestCase):
             self.assertTrue(hasattr(client, attr), f"Missing resource: {attr}")
 
     def test_batch_returns_batch_session(self):
-        from warera.client import WareraClient
         from warera._batch import BatchSession
+        from warera.client import WareraClient
         fake_http = mock.MagicMock()
         fake_http._api_key = None
         fake_http._base_url = "https://test"

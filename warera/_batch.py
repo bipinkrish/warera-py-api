@@ -131,7 +131,7 @@ class BatchSession:
 
         try:
             results = await self._http.post_batch(procedures, inputs)
-            for item, data in zip(chunk, results):
+            for item, data in zip(chunk, results, strict=True):
                 item._resolve(data)
         except WareraBatchError as exc:
             # Partial success — resolve what succeeded, fail what didn't
@@ -145,7 +145,7 @@ class BatchSession:
             for item in chunk:
                 item._fail(exc)
 
-    async def __aenter__(self) -> "BatchSession":
+    async def __aenter__(self) -> BatchSession:
         return self
 
     async def __aexit__(self, exc_type: Any, *_: Any) -> None:

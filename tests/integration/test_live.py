@@ -13,8 +13,8 @@ from __future__ import annotations
 import pytest
 
 from warera import WareraClient
-from warera._enums import BattleFilter, RankingType, EventType, TransactionType
-from warera.models import Country, User, Battle, Government
+from warera._enums import RankingType
+from warera.models import Country
 
 
 @pytest.fixture(scope="module")

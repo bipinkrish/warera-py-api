@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ..models.game_config import GameConfig, GameDates
 from ._base import BaseResource
 

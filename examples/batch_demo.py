@@ -3,6 +3,7 @@ Batch request examples — fetching many resources in a single HTTP round-trip.
 """
 
 import asyncio
+
 from warera import WareraClient
 
 
@@ -60,7 +61,7 @@ async def example_ruling_parties(country_ids: list[str]):
                 for cid in country_ids
             ]
 
-        for cid, gov_item in zip(country_ids, gov_items):
+        for cid, gov_item in zip(country_ids, gov_items, strict=True):
             if gov_item.ok:
                 data = gov_item.result
                 print(f"Country {cid}: president={data.get('presidentId', 'none')}")

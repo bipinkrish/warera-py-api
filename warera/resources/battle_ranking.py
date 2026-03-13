@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from .._enums import BattleRankingDataType, BattleRankingEntityType, BattleRankingSide
 from ..models.battle_ranking import BattleRankingEntry
 from ._base import BaseResource

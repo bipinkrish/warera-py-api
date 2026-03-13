@@ -3,8 +3,10 @@ Basic async usage example.
 """
 
 import asyncio
+
 from warera import WareraClient
-from warera._enums import RankingType, BattleFilter
+from warera._enums import RankingType
+
 
 async def main():
     # Works without a key (lower rate limits), or set WARERA_API_KEY env var

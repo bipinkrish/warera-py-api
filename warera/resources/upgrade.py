@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 from .._enums import UpgradeType
-from ..models.upgrade import Upgrade
 from ..exceptions import WareraError
+from ..models.upgrade import Upgrade
 from ._base import BaseResource
 
 

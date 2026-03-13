@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from typing import Any
-from .._pagination import paginate, collect_all
+
+from .._pagination import collect_all, paginate
 from ..models.common import CursorPage
 from ..models.work_offer import WorkOffer
 from ._base import BaseResource

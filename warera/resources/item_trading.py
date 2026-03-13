@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ..models.item_trading import ItemOffer, ItemPrice, TradingOrder
 from ._base import BaseResource
 

@@ -26,11 +26,10 @@ from __future__ import annotations
 import asyncio
 import functools
 import inspect
-from collections.abc import AsyncGenerator
 from typing import Any
 
-from .client import WareraClient as _AsyncClient
 from ._batch import BatchSession
+from .client import WareraClient as _AsyncClient
 
 
 def _run(coro: Any) -> Any:
@@ -54,7 +53,7 @@ def _sync_generator(async_gen_fn: Any, *args: Any, **kwargs: Any) -> list[Any]:
     return _run(_collect())
 
 
-def _wrap_resource(async_resource: Any) -> "_SyncResourceProxy":
+def _wrap_resource(async_resource: Any) -> _SyncResourceProxy:
     return _SyncResourceProxy(async_resource)
 
 
@@ -94,7 +93,7 @@ class _SyncBatchSession:
     def add(self, procedure: str, input_: dict[str, Any] | None = None) -> Any:
         return self._session.add(procedure, input_)
 
-    def __enter__(self) -> "_SyncBatchSession":
+    def __enter__(self) -> _SyncBatchSession:
         return self
 
     def __exit__(self, *_: Any) -> None:
@@ -140,7 +139,7 @@ class WareraClient:
     def close(self) -> None:
         _run(self._async_client.aclose())
 
-    def __enter__(self) -> "WareraClient":
+    def __enter__(self) -> WareraClient:
         return self
 
     def __exit__(self, *_: Any) -> None:

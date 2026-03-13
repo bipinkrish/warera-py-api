@@ -1,4 +1,5 @@
-from pydantic import Field, AliasChoices
+from pydantic import AliasChoices, Field
+
 from .common import WareraModel
 
 

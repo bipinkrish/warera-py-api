@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ..models.search import SearchResult, SearchResults
 from ._base import BaseResource
 

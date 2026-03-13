@@ -50,7 +50,7 @@ class CursorPage(WareraModel, Generic[T]):
     has_more: bool = False
 
     @classmethod
-    def from_raw(cls, raw: Any, item_type: type[T]) -> "CursorPage[T]":
+    def from_raw(cls, raw: Any, item_type: type[T]) -> CursorPage[T]:
         """
         Parse a raw API response dict into a typed CursorPage.
         Handles both wrapped `{items, nextCursor}` and plain list responses.

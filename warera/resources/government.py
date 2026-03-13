@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ..models.government import Government
 from ._base import BaseResource
 

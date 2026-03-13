@@ -1,5 +1,7 @@
 from typing import Any
-from pydantic import Field, AliasPath
+
+from pydantic import AliasPath, Field
+
 from .common import WareraModel
 
 

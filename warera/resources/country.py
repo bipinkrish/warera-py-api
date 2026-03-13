@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ..models.country import Country
 from ._base import BaseResource
 

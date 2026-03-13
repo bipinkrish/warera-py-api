@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from .._batch import fetch_many_by_ids
 from ..models.round_ import Hit, Round
 from ._base import BaseResource

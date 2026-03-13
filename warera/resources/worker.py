@@ -1,5 +1,6 @@
 from __future__ import annotations
-from ..models.worker import Worker, WorkerCount
+
+from ..models.worker import Worker
 from ._base import BaseResource
 
 

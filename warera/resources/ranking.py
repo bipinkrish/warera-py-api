@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from .._enums import RankingType
 from ..models.ranking import RankingEntry
 from ._base import BaseResource

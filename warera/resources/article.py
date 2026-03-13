@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from typing import Any
+
 from .._enums import ArticleType
-from .._pagination import paginate, collect_all
+from .._pagination import collect_all, paginate
 from ..models.article import Article, ArticleLite
 from ..models.common import CursorPage
 from ._base import BaseResource

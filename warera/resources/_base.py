@@ -1,5 +1,6 @@
 """Base class shared by all resource namespaces."""
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -7,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class BaseResource:
-    def __init__(self, http: "HttpSession") -> None:
+    def __init__(self, http: HttpSession) -> None:
         self._http = http
 
     async def _get(self, procedure: str, **params: Any) -> Any:

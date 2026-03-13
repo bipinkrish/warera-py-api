@@ -22,7 +22,6 @@ from tenacity import (
     retry_if_exception,
     stop_after_attempt,
     wait_exponential,
-    wait_fixed,
 )
 
 from .exceptions import (
@@ -68,7 +67,7 @@ class HttpSession:
     # Lifecycle
     # ------------------------------------------------------------------
 
-    async def __aenter__(self) -> "HttpSession":
+    async def __aenter__(self) -> HttpSession:
         await self._ensure_client()
         return self
 
@@ -203,7 +202,7 @@ class HttpSession:
 
         if "error" in data:
             err = data["error"]
-            msg = err.get("message", "Unknown tRPC error")
+            _msg = err.get("message", "Unknown tRPC error")
             code = err.get("data", {}).get("httpStatus", 500)
             _raise_for_status(code, err)
 
@@ -234,10 +233,10 @@ class HttpSession:
         results: dict[int, Any] = {}
         errors: dict[int, WareraHTTPError] = {}
 
-        for i, (item, proc) in enumerate(zip(raw_list, procedures)):
+        for i, (item, proc) in enumerate(zip(raw_list, procedures, strict=True)):
             if "error" in item:
                 err = item["error"]
-                msg = err.get("message", "Unknown error")
+                _msg = err.get("message", "Unknown error")
                 code = err.get("data", {}).get("httpStatus", 500)
                 try:
                     _raise_for_status(code, err)
@@ -246,7 +245,7 @@ class HttpSession:
             else:
                 try:
                     results[i] = item["result"]["data"]
-                except (KeyError, TypeError) as exc:
+                except (KeyError, TypeError):
                     from .exceptions import WareraValidationError
                     errors[i] = WareraValidationError(  # type: ignore[assignment]
                         f"Bad shape at batch index {i} ({proc}): {item}", item

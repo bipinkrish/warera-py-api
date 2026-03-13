@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from .._batch import fetch_many_by_ids
 from ..models.region import Region
 from ._base import BaseResource

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from urllib.parse import unquote, urlparse, parse_qs
+from urllib.parse import parse_qs, unquote, urlparse
 
 import httpx
 import pytest
@@ -11,10 +11,9 @@ import respx
 
 from warera._http import HttpSession
 from warera.exceptions import (
-    WareraNotFoundError,
-    WareraRateLimitError,
-    WareraUnauthorizedError,
     WareraBatchError,
+    WareraNotFoundError,
+    WareraUnauthorizedError,
 )
 
 BASE = "https://api2.warera.io/trpc"

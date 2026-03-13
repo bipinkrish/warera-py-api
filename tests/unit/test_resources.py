@@ -6,11 +6,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from warera.resources.country import CountryResource
 from warera.resources.battle import BattleResource
+from warera.resources.country import CountryResource
 from warera.resources.item_trading import ItemTradingResource
 from warera.resources.user import UserResource
-from warera._enums import BattleFilter, RankingType
 
 
 def _mock_http(return_value) -> MagicMock:
