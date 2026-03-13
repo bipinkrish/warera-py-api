@@ -7,7 +7,7 @@ import asyncio
 from warera import WareraClient
 
 
-async def example_mixed_batch():
+async def example_mixed_batch() -> None:
     """Load country + government + prices in one request."""
     async with WareraClient() as client:
         # Fetch any valid country ID first
@@ -20,17 +20,20 @@ async def example_mixed_batch():
 
         async with client.batch() as batch:
             country_item = batch.add("country.getCountryById", {"countryId": cid})
-            gov_item     = batch.add("government.getByCountryId", {"countryId": cid})
-            prices_item  = batch.add("itemTrading.getPrices", {})
-            dates_item   = batch.add("gameConfig.getDates", {})
+            gov_item = batch.add("government.getByCountryId", {"countryId": cid})
+            prices_item = batch.add("itemTrading.getPrices", {})
+            dates_item = batch.add("gameConfig.getDates", {})
 
         print("Country raw:", country_item.result)
         print("Government raw:", gov_item.result)
-        print("Prices keys:", list(prices_item.result.keys())[:5] if isinstance(prices_item.result, dict) else "N/A")
+        print(
+            "Prices keys:",
+            list(prices_item.result.keys())[:5] if isinstance(prices_item.result, dict) else "N/A",
+        )
         print("Game dates:", dates_item.result)
 
 
-async def example_many_companies(country_id: str):
+async def example_many_companies(country_id: str) -> None:
     """
     Batch-fetch companies owned by each citizen of a country.
     Demonstrates get_many (auto-chunked batch under the hood).
@@ -48,7 +51,7 @@ async def example_many_companies(country_id: str):
             print(f"  {u.username} (level {u.level})")
 
 
-async def example_ruling_parties(country_ids: list[str]):
+async def example_ruling_parties(country_ids: list[str]) -> None:
     """
     Mirrors the TypeScript batch pattern from the docs:
     fetch the ruling party for each country in one batch POST.
@@ -57,8 +60,7 @@ async def example_ruling_parties(country_ids: list[str]):
         # Get governments for all countries in one batch
         async with client.batch() as batch:
             gov_items = [
-                batch.add("government.getByCountryId", {"countryId": cid})
-                for cid in country_ids
+                batch.add("government.getByCountryId", {"countryId": cid}) for cid in country_ids
             ]
 
         for cid, gov_item in zip(country_ids, gov_items, strict=True):
@@ -69,12 +71,12 @@ async def example_ruling_parties(country_ids: list[str]):
                 print(f"Country {cid}: ERROR — {gov_item._error}")
 
 
-async def example_partial_batch_error():
+async def example_partial_batch_error() -> None:
     """Show that a partial batch failure doesn't crash everything."""
     async with WareraClient() as client:
         async with client.batch() as batch:
             good = batch.add("country.getAllCountries", {})
-            bad  = batch.add("company.getById", {"companyId": "nonexistent_id_99999"})
+            bad = batch.add("company.getById", {"companyId": "nonexistent_id_99999"})
 
         print("Good item ok:", good.ok)
         print("Bad item ok: ", bad.ok)

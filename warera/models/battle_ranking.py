@@ -9,5 +9,5 @@ class BattleRankingEntry(WareraModel):
     entity_type: str | None = None  # "user" | "country" | "mu"
     name: str | None = None
     country_id: str | None = None
-    value: float | None = None      # damage / points / money depending on dataType
-    side: str | None = None         # "attacker" | "defender"
+    value: float | None = None  # damage / points / money depending on dataType
+    side: str | None = None  # "attacker" | "defender"

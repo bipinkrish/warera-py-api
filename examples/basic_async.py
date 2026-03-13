@@ -8,10 +8,9 @@ from warera import WareraClient
 from warera._enums import RankingType
 
 
-async def main():
+async def main() -> None:
     # Works without a key (lower rate limits), or set WARERA_API_KEY env var
     async with WareraClient() as client:
-
         # --- Country lookups ---
         all_countries = await client.country.get_all()
         print(f"Total countries: {len(all_countries)}")
@@ -21,6 +20,7 @@ async def main():
             print(f"India ID: {india.id}")
 
             # Government
+            assert india.id is not None
             gov = await client.government.get(india.id)
             print(f"Has president: {gov.has_president()}")
 
@@ -33,7 +33,9 @@ async def main():
         page = await client.battle.get_many(is_active=True, limit=5)
         print(f"\nActive battles (first page): {len(page.items)}")
         for battle in page.items:
-            print(f"  Battle {battle.id}: {battle.attacker_country_id} vs {battle.defender_country_id}")
+            print(
+                f"  Battle {battle.id}: {battle.attacker_country_id} vs {battle.defender_country_id}"
+            )
 
         # --- Rankings ---
         top_users = await client.ranking.get(RankingType.USER_WEALTH)

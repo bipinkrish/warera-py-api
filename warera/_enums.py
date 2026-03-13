@@ -5,23 +5,21 @@ Import from here to get tab-completion and typo safety on enum values.
 
 from __future__ import annotations
 
-try:
-    from enum import StrEnum
-except ImportError:
-    from enum import Enum
+import enum
 
-    class StrEnum(str, Enum):
+# Use StrEnum from enum if available (Python 3.11+), otherwise fallback
+if hasattr(enum, "StrEnum"):
+    from enum import StrEnum  # type: ignore[attr-defined]
+else:
+
+    class StrEnum(str, enum.Enum):  # type: ignore[no-redef]
         """Fallback for Python < 3.11."""
-        pass
+
+        def __str__(self) -> str:
+            return str(self.value)
 
 
-
-# ---------------------------------------------------------------------------
-# Article
-# ---------------------------------------------------------------------------
-
-
-class ArticleType(StrEnum):
+class ArticleType(StrEnum):  # type: ignore[misc]
     DAILY = "daily"
     WEEKLY = "weekly"
     TOP = "top"
@@ -35,12 +33,12 @@ class ArticleType(StrEnum):
 # ---------------------------------------------------------------------------
 
 
-class BattleDirection(StrEnum):
+class BattleDirection(StrEnum):  # type: ignore[misc]
     FORWARD = "forward"
     BACKWARD = "backward"
 
 
-class BattleFilter(StrEnum):
+class BattleFilter(StrEnum):  # type: ignore[misc]
     ALL = "all"
     YOUR_COUNTRY = "yourCountry"
     YOUR_ENEMIES = "yourEnemies"
@@ -51,19 +49,19 @@ class BattleFilter(StrEnum):
 # ---------------------------------------------------------------------------
 
 
-class BattleRankingDataType(StrEnum):
+class BattleRankingDataType(StrEnum):  # type: ignore[misc]
     DAMAGE = "damage"
     POINTS = "points"
     MONEY = "money"
 
 
-class BattleRankingEntityType(StrEnum):
+class BattleRankingEntityType(StrEnum):  # type: ignore[misc]
     USER = "user"
     COUNTRY = "country"
     MU = "mu"
 
 
-class BattleRankingSide(StrEnum):
+class BattleRankingSide(StrEnum):  # type: ignore[misc]
     ATTACKER = "attacker"
     DEFENDER = "defender"
 
@@ -73,7 +71,7 @@ class BattleRankingSide(StrEnum):
 # ---------------------------------------------------------------------------
 
 
-class EventType(StrEnum):
+class EventType(StrEnum):  # type: ignore[misc]
     WAR_DECLARED = "warDeclared"
     PEACE_AGREEMENT = "peace_agreement"
     BATTLE_OPENED = "battleOpened"
@@ -102,7 +100,7 @@ class EventType(StrEnum):
 # ---------------------------------------------------------------------------
 
 
-class RankingType(StrEnum):
+class RankingType(StrEnum):  # type: ignore[misc]
     # Country rankings
     WEEKLY_COUNTRY_DAMAGES = "weeklyCountryDamages"
     WEEKLY_COUNTRY_DAMAGES_PER_CITIZEN = "weeklyCountryDamagesPerCitizen"
@@ -141,7 +139,7 @@ class RankingType(StrEnum):
 # ---------------------------------------------------------------------------
 
 
-class TransactionType(StrEnum):
+class TransactionType(StrEnum):  # type: ignore[misc]
     APPLICATION_FEE = "applicationFee"
     TRADING = "trading"
     ITEM_MARKET = "itemMarket"
@@ -158,7 +156,7 @@ class TransactionType(StrEnum):
 # ---------------------------------------------------------------------------
 
 
-class UpgradeType(StrEnum):
+class UpgradeType(StrEnum):  # type: ignore[misc]
     BUNKER = "bunker"
     BASE = "base"
     PACIFICATION_CENTER = "pacificationCenter"

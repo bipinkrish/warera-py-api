@@ -22,7 +22,11 @@ class RoundResource(BaseResource):
         raw = await self._get("round.getLastHits", roundId=round_id)
         if isinstance(raw, list):
             return [Hit.model_validate(h) for h in raw]
-        items = raw.get("items", raw.get("data", [])) if isinstance(raw, dict) else []
+        if isinstance(raw, dict):
+            raw_items = raw.get("items", raw.get("data", []))
+            items = raw_items if isinstance(raw_items, list) else []
+        else:
+            items = []
         return [Hit.model_validate(h) for h in items]
 
     async def get_many(self, round_ids: list[str], batch_size: int = 50) -> list[Round]:

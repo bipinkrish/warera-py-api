@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 from .._batch import fetch_many_by_ids
@@ -48,7 +49,7 @@ class MUResource(BaseResource):
         )
         return CursorPage.from_raw(raw, MilitaryUnit)
 
-    async def paginate(self, **kwargs: Any):
+    async def paginate(self, **kwargs: Any) -> AsyncIterator[MilitaryUnit]:
         """Async generator over all military units matching the given filters."""
         async for item in paginate(self.get_paginated, **kwargs):
             yield item
@@ -59,7 +60,5 @@ class MUResource(BaseResource):
 
     async def get_many(self, mu_ids: list[str], batch_size: int = 50) -> list[MilitaryUnit]:
         """Fetch multiple military units by ID in batched POST requests."""
-        raw_list = await fetch_many_by_ids(
-            self._http, "mu.getById", "muId", mu_ids, batch_size
-        )
+        raw_list = await fetch_many_by_ids(self._http, "mu.getById", "muId", mu_ids, batch_size)
         return [MilitaryUnit.model_validate(r) for r in raw_list]

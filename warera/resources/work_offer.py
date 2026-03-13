@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 from .._pagination import collect_all, paginate
@@ -26,7 +27,11 @@ class WorkOfferResource(BaseResource):
         raw = await self._get("workOffer.getWorkOfferByCompanyId", companyId=company_id)
         if isinstance(raw, list):
             return [WorkOffer.model_validate(o) for o in raw]
-        items = raw.get("items", raw.get("data", [])) if isinstance(raw, dict) else []
+        if isinstance(raw, dict):
+            raw_items = raw.get("items", raw.get("data", []))
+            items = raw_items if isinstance(raw_items, list) else []
+        else:
+            items = []
         return [WorkOffer.model_validate(o) for o in items]
 
     async def get_paginated(
@@ -60,7 +65,7 @@ class WorkOfferResource(BaseResource):
         )
         return CursorPage.from_raw(raw, WorkOffer)
 
-    async def paginate(self, **kwargs: Any):
+    async def paginate(self, **kwargs: Any) -> AsyncIterator[WorkOffer]:
         """Async generator over work offers matching the given filters."""
         async for item in paginate(self.get_paginated, **kwargs):
             yield item

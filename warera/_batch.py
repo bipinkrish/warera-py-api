@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
 from .exceptions import WareraBatchError, WareraError
 
@@ -188,7 +188,7 @@ async def fetch_many_by_ids(
     async def fetch_chunk(chunk: list[str]) -> list[Any]:
         procedures = [procedure] * len(chunk)
         inputs = [{id_param: id_} for id_ in chunk]
-        return await http.post_batch(procedures, inputs)
+        return cast("list[Any]", await http.post_batch(procedures, inputs))
 
     chunk_results = await asyncio.gather(*[fetch_chunk(c) for c in chunks])
     return [item for sublist in chunk_results for item in sublist]

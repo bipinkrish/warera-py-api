@@ -26,7 +26,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import inspect
-from typing import Any
+from typing import Any, cast
 
 from ._batch import BatchSession
 from .client import WareraClient as _AsyncClient
@@ -38,7 +38,8 @@ def _run(coro: Any) -> Any:
         loop = asyncio.get_event_loop()
         if loop.is_running():
             # Inside an existing async context (e.g. Jupyter) — use nest_asyncio or raise
-            import nest_asyncio  # type: ignore[import]
+            import nest_asyncio
+
             nest_asyncio.apply()
             return loop.run_until_complete(coro)
     except RuntimeError:
@@ -48,9 +49,11 @@ def _run(coro: Any) -> Any:
 
 def _sync_generator(async_gen_fn: Any, *args: Any, **kwargs: Any) -> list[Any]:
     """Drain an async generator into a list synchronously."""
+
     async def _collect() -> list[Any]:
         return [item async for item in async_gen_fn(*args, **kwargs)]
-    return _run(_collect())
+
+    return cast("list[Any]", _run(_collect()))
 
 
 def _wrap_resource(async_resource: Any) -> _SyncResourceProxy:
@@ -70,15 +73,19 @@ class _SyncResourceProxy:
         attr = getattr(self._resource, name)
 
         if inspect.iscoroutinefunction(attr):
+
             @functools.wraps(attr)
             def sync_method(*args: Any, **kwargs: Any) -> Any:
                 return _run(attr(*args, **kwargs))
+
             return sync_method
 
         if inspect.isasyncgenfunction(attr):
+
             @functools.wraps(attr)
             def sync_gen(*args: Any, **kwargs: Any) -> list[Any]:
                 return _sync_generator(attr, *args, **kwargs)
+
             return sync_gen
 
         return attr
@@ -113,25 +120,25 @@ class WareraClient:
         _run(self._async_client._http.__aenter__())
 
         # Wrap every resource namespace
-        self.user           = _wrap_resource(self._async_client.user)
-        self.company        = _wrap_resource(self._async_client.company)
-        self.country        = _wrap_resource(self._async_client.country)
-        self.government     = _wrap_resource(self._async_client.government)
-        self.region         = _wrap_resource(self._async_client.region)
-        self.battle         = _wrap_resource(self._async_client.battle)
+        self.user = _wrap_resource(self._async_client.user)
+        self.company = _wrap_resource(self._async_client.company)
+        self.country = _wrap_resource(self._async_client.country)
+        self.government = _wrap_resource(self._async_client.government)
+        self.region = _wrap_resource(self._async_client.region)
+        self.battle = _wrap_resource(self._async_client.battle)
         self.battle_ranking = _wrap_resource(self._async_client.battle_ranking)
-        self.round          = _wrap_resource(self._async_client.round)
-        self.event          = _wrap_resource(self._async_client.event)
-        self.item_trading   = _wrap_resource(self._async_client.item_trading)
-        self.work_offer     = _wrap_resource(self._async_client.work_offer)
-        self.worker         = _wrap_resource(self._async_client.worker)
-        self.mu             = _wrap_resource(self._async_client.mu)
-        self.ranking        = _wrap_resource(self._async_client.ranking)
-        self.transaction    = _wrap_resource(self._async_client.transaction)
-        self.upgrade        = _wrap_resource(self._async_client.upgrade)
-        self.article        = _wrap_resource(self._async_client.article)
-        self.search         = _wrap_resource(self._async_client.search)
-        self.game_config    = _wrap_resource(self._async_client.game_config)
+        self.round = _wrap_resource(self._async_client.round)
+        self.event = _wrap_resource(self._async_client.event)
+        self.item_trading = _wrap_resource(self._async_client.item_trading)
+        self.work_offer = _wrap_resource(self._async_client.work_offer)
+        self.worker = _wrap_resource(self._async_client.worker)
+        self.mu = _wrap_resource(self._async_client.mu)
+        self.ranking = _wrap_resource(self._async_client.ranking)
+        self.transaction = _wrap_resource(self._async_client.transaction)
+        self.upgrade = _wrap_resource(self._async_client.upgrade)
+        self.article = _wrap_resource(self._async_client.article)
+        self.search = _wrap_resource(self._async_client.search)
+        self.game_config = _wrap_resource(self._async_client.game_config)
 
     def batch(self, batch_size: int | None = None) -> _SyncBatchSession:
         return _SyncBatchSession(self._async_client.batch(batch_size))

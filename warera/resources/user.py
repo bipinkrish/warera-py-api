@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 from .._batch import fetch_many_by_ids
@@ -41,7 +42,7 @@ class UserResource(BaseResource):
     # Pagination helpers
     # ------------------------------------------------------------------
 
-    async def paginate_by_country(self, country_id: str, **kwargs: Any):
+    async def paginate_by_country(self, country_id: str, **kwargs: Any) -> AsyncIterator[User]:
         """Async generator — yields every user in a country across all pages."""
         async for item in paginate(self.get_by_country, country_id=country_id, **kwargs):
             yield item

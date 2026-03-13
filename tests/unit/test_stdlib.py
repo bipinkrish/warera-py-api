@@ -19,6 +19,7 @@ import sys
 import unittest
 import unittest.mock as mock
 from dataclasses import dataclass
+from typing import Any
 from pathlib import Path
 
 # ── make the warera package importable without installing ──────────────────
@@ -29,18 +30,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 # pydantic stub
 pydantic_stub = mock.MagicMock()
 
+
 class _BaseModel:
-    model_config = {}
+    model_config: dict[str, Any] = {}
+
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
+
     @classmethod
     def model_validate(cls, data):
         if isinstance(data, dict):
             return cls(**{k: v for k, v in data.items()})
         return data
+
     def model_dump(self):
         return self.__dict__
+
 
 pydantic_stub.BaseModel = _BaseModel
 pydantic_stub.ConfigDict = lambda **kw: {}
@@ -50,37 +56,48 @@ _generic_stub = mock.MagicMock()
 pydantic_stub.alias_generators = _generic_stub
 pydantic_stub.alias_generators.to_camel = lambda s: s
 
-sys.modules['pydantic'] = pydantic_stub
-sys.modules['pydantic.alias_generators'] = _generic_stub
+sys.modules["pydantic"] = pydantic_stub
+sys.modules["pydantic.alias_generators"] = _generic_stub
 
 # httpx stub
 httpx_stub = mock.MagicMock()
+
+
 class _FakeResponse:
     def __init__(self, status_code=200, data=None):
         self.status_code = status_code
         self._data = data or {}
+
     def json(self):
         return self._data
+
     @property
     def text(self):
         return json.dumps(self._data)
+
+
 httpx_stub.AsyncClient = mock.MagicMock
 httpx_stub.Response = _FakeResponse
 httpx_stub.TransportError = Exception
-sys.modules['httpx'] = httpx_stub
+sys.modules["httpx"] = httpx_stub
 
 # tenacity stub — make @retry a no-op decorator
 tenacity_stub = mock.MagicMock()
+
+
 def _noop_retry(**kw):
     def decorator(fn):
         return fn
+
     return decorator
+
+
 tenacity_stub.retry = _noop_retry
 tenacity_stub.retry_if_exception = lambda f: None
 tenacity_stub.stop_after_attempt = lambda n: None
 tenacity_stub.wait_exponential = lambda **kw: None
 tenacity_stub.wait_fixed = lambda s: None
-sys.modules['tenacity'] = tenacity_stub
+sys.modules["tenacity"] = tenacity_stub
 
 # ── now import our modules ─────────────────────────────────────────────────
 # ruff: noqa
@@ -117,8 +134,8 @@ def run(coro):
 # 1. Enums
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestEnums(unittest.TestCase):
 
+class TestEnums(unittest.TestCase):
     def test_article_type_values(self):
         expected = {"daily", "weekly", "top", "my", "subscriptions", "last"}
         self.assertEqual({e.value for e in ArticleType}, expected)
@@ -141,10 +158,19 @@ class TestEnums(unittest.TestCase):
 
     def test_upgrade_type_values(self):
         values = {e.value for e in UpgradeType}
-        self.assertEqual(values, {
-            "bunker", "base", "pacificationCenter", "storage",
-            "automatedEngine", "breakRoom", "headquarters", "dormitories",
-        })
+        self.assertEqual(
+            values,
+            {
+                "bunker",
+                "base",
+                "pacificationCenter",
+                "storage",
+                "automatedEngine",
+                "breakRoom",
+                "headquarters",
+                "dormitories",
+            },
+        )
 
     def test_battle_ranking_data_type(self):
         self.assertEqual({e.value for e in BattleRankingDataType}, {"damage", "points", "money"})
@@ -157,8 +183,8 @@ class TestEnums(unittest.TestCase):
 # 2. Exceptions
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestExceptions(unittest.TestCase):
 
+class TestExceptions(unittest.TestCase):
     def test_hierarchy(self):
         self.assertTrue(issubclass(WareraUnauthorizedError, WareraHTTPError))
         self.assertTrue(issubclass(WareraForbiddenError, WareraHTTPError))
@@ -199,7 +225,7 @@ class TestExceptions(unittest.TestCase):
 
     def test_no_raise_for_200(self):
         # Should not raise
-        _raise_for_status(200, {})   # not actually called in normal flow, but confirm guard
+        _raise_for_status(200, {})  # not actually called in normal flow, but confirm guard
         # No assertion needed — just must not raise
 
     def test_warera_http_error_carries_status(self):
@@ -224,11 +250,13 @@ class TestExceptions(unittest.TestCase):
 # 3. HTTP layer — encoding logic (no live network)
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestHttpEncoding(unittest.TestCase):
     """Test URL/body building without making real requests."""
 
     def _make_session(self):
         from warera._http import HttpSession
+
         return HttpSession(base_url="https://api2.warera.io/trpc")
 
     def test_none_values_stripped_before_encoding(self):
@@ -243,6 +271,7 @@ class TestHttpEncoding(unittest.TestCase):
 
     def test_auth_header_present_when_key_set(self):
         from warera._http import HttpSession
+
         session = HttpSession(api_key="my-secret", base_url="https://test")
         headers = session._auth_headers()
         self.assertEqual(headers["X-API-Key"], "my-secret")
@@ -251,6 +280,7 @@ class TestHttpEncoding(unittest.TestCase):
         import os
 
         from warera._http import HttpSession
+
         # Ensure env var isn't set during this test
         old = os.environ.pop("WARERA_API_KEY", None)
         try:
@@ -265,6 +295,7 @@ class TestHttpEncoding(unittest.TestCase):
         import os
 
         from warera._http import HttpSession
+
         os.environ["WARERA_API_KEY"] = "env-key"
         try:
             session = HttpSession(base_url="https://test")
@@ -274,18 +305,21 @@ class TestHttpEncoding(unittest.TestCase):
 
     def test_unwrap_single_ok(self):
         from warera._http import HttpSession
+
         resp = _FakeResponse(200, {"result": {"data": {"id": "1", "name": "TestCo"}}})
         result = HttpSession._unwrap_single(resp, "company.getById")
         self.assertEqual(result, {"id": "1", "name": "TestCo"})
 
     def test_unwrap_single_trpc_error_raises(self):
         from warera._http import HttpSession
+
         resp = _FakeResponse(200, {"error": {"message": "Not found", "data": {"httpStatus": 404}}})
         with self.assertRaises(WareraNotFoundError):
             HttpSession._unwrap_single(resp, "company.getById")
 
     def test_unwrap_batch_all_ok(self):
         from warera._http import HttpSession
+
         raw = [
             {"result": {"data": {"id": "1"}}},
             {"result": {"data": {"id": "2"}}},
@@ -295,6 +329,7 @@ class TestHttpEncoding(unittest.TestCase):
 
     def test_unwrap_batch_partial_failure_raises_batch_error(self):
         from warera._http import HttpSession
+
         raw = [
             {"result": {"data": {"id": "1"}}},
             {"error": {"message": "Not found", "data": {"httpStatus": 404}}},
@@ -343,6 +378,7 @@ class TestHttpEncoding(unittest.TestCase):
 # 4. BatchSession
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def _make_http(responses):
     http = mock.MagicMock()
     http.post_batch = mock.AsyncMock(return_value=responses)
@@ -350,7 +386,6 @@ def _make_http(responses):
 
 
 class TestBatchSession(unittest.TestCase):
-
     def test_resolves_items_after_flush(self):
         http = _make_http([{"id": "1"}, {"id": "2"}])
 
@@ -371,7 +406,7 @@ class TestBatchSession(unittest.TestCase):
 
         async def go():
             async with BatchSession(http) as batch:
-                batch.add("company.getById",           {"companyId": "111"})
+                batch.add("company.getById", {"companyId": "111"})
                 batch.add("government.getByCountryId", {"countryId": "7"})
 
         run(go())
@@ -392,10 +427,12 @@ class TestBatchSession(unittest.TestCase):
 
     def test_splits_into_chunks_when_exceeds_batch_size(self):
         http = mock.MagicMock()
-        http.post_batch = mock.AsyncMock(side_effect=[
-            [{"id": "1"}, {"id": "2"}],
-            [{"id": "3"}],
-        ])
+        http.post_batch = mock.AsyncMock(
+            side_effect=[
+                [{"id": "1"}, {"id": "2"}],
+                [{"id": "3"}],
+            ]
+        )
 
         async def go():
             async with BatchSession(http, batch_size=2) as batch:
@@ -428,7 +465,7 @@ class TestBatchSession(unittest.TestCase):
         async def go():
             async with BatchSession(http) as batch:
                 good = batch.add("company.getById", {"companyId": "1"})
-                bad  = batch.add("company.getById", {"companyId": "missing"})
+                bad = batch.add("company.getById", {"companyId": "missing"})
             return good, bad
 
         good, bad = run(go())
@@ -456,8 +493,8 @@ class TestBatchSession(unittest.TestCase):
 # 5. fetch_many_by_ids
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestFetchManyByIds(unittest.TestCase):
 
+class TestFetchManyByIds(unittest.TestCase):
     def test_single_chunk(self):
         http = _make_http([{"id": "1"}, {"id": "2"}])
         results = run(fetch_many_by_ids(http, "company.getById", "companyId", ["1", "2"]))
@@ -469,13 +506,15 @@ class TestFetchManyByIds(unittest.TestCase):
 
     def test_multiple_chunks_order_preserved(self):
         http = mock.MagicMock()
-        http.post_batch = mock.AsyncMock(side_effect=[
-            [{"id": "1"}, {"id": "2"}],
-            [{"id": "3"}],
-        ])
-        results = run(fetch_many_by_ids(
-            http, "company.getById", "companyId", ["1", "2", "3"], batch_size=2
-        ))
+        http.post_batch = mock.AsyncMock(
+            side_effect=[
+                [{"id": "1"}, {"id": "2"}],
+                [{"id": "3"}],
+            ]
+        )
+        results = run(
+            fetch_many_by_ids(http, "company.getById", "companyId", ["1", "2", "3"], batch_size=2)
+        )
         self.assertEqual([r["id"] for r in results], ["1", "2", "3"])
         self.assertEqual(http.post_batch.call_count, 2)
 
@@ -496,6 +535,7 @@ class TestFetchManyByIds(unittest.TestCase):
 # 6. Pagination
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 @dataclass
 class _FakePage:
     items: list
@@ -504,9 +544,9 @@ class _FakePage:
 
 
 class TestPagination(unittest.TestCase):
-
     def _make_paginate(self):
         from warera._pagination import collect_all, paginate
+
         return paginate, collect_all
 
     def test_single_page_yields_all_items(self):
@@ -521,9 +561,9 @@ class TestPagination(unittest.TestCase):
     def test_multi_page_yields_all_items_in_order(self):
         paginate, _ = self._make_paginate()
         pages = {
-            None:   _FakePage([1, 2], "c1", True),
-            "c1":   _FakePage([3, 4], "c2", True),
-            "c2":   _FakePage([5],    None,  False),
+            None: _FakePage([1, 2], "c1", True),
+            "c1": _FakePage([3, 4], "c2", True),
+            "c2": _FakePage([5], None, False),
         }
 
         async def fetch(cursor=None, **_):
@@ -547,7 +587,7 @@ class TestPagination(unittest.TestCase):
         _, collect_all = self._make_paginate()
         pages = {
             None: _FakePage([1, 2], "c1", True),
-            "c1": _FakePage([3],    None,  False),
+            "c1": _FakePage([3], None, False),
         }
 
         async def fetch(cursor=None, **_):
@@ -578,11 +618,13 @@ class TestPagination(unittest.TestCase):
 # 7. Resource helpers (no HTTP, test parse logic)
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCountryResourceLogic(unittest.TestCase):
     """Test parsing logic in CountryResource without real HTTP."""
 
     def _resource(self, return_value):
         from warera.resources.country import CountryResource
+
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value)
         return CountryResource(http)
@@ -614,9 +656,9 @@ class TestCountryResourceLogic(unittest.TestCase):
 
 
 class TestWorkerResourceLogic(unittest.TestCase):
-
     def _resource(self, return_value):
         from warera.resources.worker import WorkerResource
+
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value)
         return WorkerResource(http)
@@ -636,28 +678,30 @@ class TestWorkerResourceLogic(unittest.TestCase):
 
 
 class TestUpgradeResourceValidation(unittest.TestCase):
-
     def _resource(self, return_value=None):
         from warera.resources.upgrade import UpgradeResource
+
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value or {})
         return UpgradeResource(http)
 
     def test_raises_when_no_entity_id(self):
         from warera._enums import UpgradeType
+
         with self.assertRaises(WareraError):
             run(self._resource().get(UpgradeType.BUNKER))
 
     def test_does_not_raise_with_region_id(self):
         from warera._enums import UpgradeType
+
         # Should not raise — region_id is provided
         run(self._resource({"id": "u1"}).get(UpgradeType.BUNKER, region_id="42"))
 
 
 class TestSearchResourceValidation(unittest.TestCase):
-
     def _resource(self, return_value=None):
         from warera.resources.search import SearchResource
+
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value or {"results": []})
         return SearchResource(http)
@@ -675,10 +719,11 @@ class TestSearchResourceValidation(unittest.TestCase):
 # 8. Client assembly
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestClientAssembly(unittest.TestCase):
 
+class TestClientAssembly(unittest.TestCase):
     def test_all_resources_present(self):
         from warera.client import WareraClient
+
         client = WareraClient.__new__(WareraClient)  # don't init httpx
         # Manually wire up a fake http
         fake_http = mock.MagicMock()
@@ -690,10 +735,25 @@ class TestClientAssembly(unittest.TestCase):
             client = WareraClient(api_key="test")
 
         expected = [
-            "user", "company", "country", "government", "region",
-            "battle", "battle_ranking", "round", "event", "item_trading",
-            "work_offer", "worker", "mu", "ranking", "transaction",
-            "upgrade", "article", "search", "game_config",
+            "user",
+            "company",
+            "country",
+            "government",
+            "region",
+            "battle",
+            "battle_ranking",
+            "round",
+            "event",
+            "item_trading",
+            "work_offer",
+            "worker",
+            "mu",
+            "ranking",
+            "transaction",
+            "upgrade",
+            "article",
+            "search",
+            "game_config",
         ]
         for attr in expected:
             self.assertTrue(hasattr(client, attr), f"Missing resource: {attr}")
@@ -701,6 +761,7 @@ class TestClientAssembly(unittest.TestCase):
     def test_batch_returns_batch_session(self):
         from warera._batch import BatchSession
         from warera.client import WareraClient
+
         fake_http = mock.MagicMock()
         fake_http._api_key = None
         fake_http._base_url = "https://test"
@@ -718,6 +779,7 @@ class TestClientAssembly(unittest.TestCase):
 
         with mock.patch("warera.client.HttpSession", return_value=fake_http):
             from warera.client import WareraClient
+
             client = WareraClient(api_key="key123")
 
         r = repr(client)
@@ -730,6 +792,7 @@ class TestClientAssembly(unittest.TestCase):
 
         with mock.patch("warera.client.HttpSession", return_value=fake_http):
             from warera.client import WareraClient
+
             client = WareraClient()
 
         r = repr(client)
@@ -740,8 +803,8 @@ class TestClientAssembly(unittest.TestCase):
 # 9. Sync shim proxy mechanics
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestSyncProxy(unittest.TestCase):
 
+class TestSyncProxy(unittest.TestCase):
     def test_sync_proxy_wraps_coroutine(self):
         from warera.sync import _SyncResourceProxy
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 from .._enums import ArticleType
@@ -60,7 +61,7 @@ class ArticleResource(BaseResource):
         )
         return CursorPage.from_raw(raw, ArticleLite)
 
-    async def paginate(self, type: ArticleType | str, **kwargs: Any):
+    async def paginate(self, type: ArticleType | str, **kwargs: Any) -> AsyncIterator[ArticleLite]:
         """Async generator over articles of the given type."""
         async for item in paginate(self.get_paginated, type=type, **kwargs):
             yield item

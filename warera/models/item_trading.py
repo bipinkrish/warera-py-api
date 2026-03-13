@@ -16,7 +16,7 @@ class TradingOrder(WareraModel):
     item_code: str | None = None
     price: float | None = None
     quantity: int | None = None
-    order_type: str | None = None   # "buy" | "sell"
+    order_type: str | None = None  # "buy" | "sell"
     country_id: str | None = None
     user_id: str | None = None
     created_at: str | None = None

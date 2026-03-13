@@ -27,6 +27,7 @@ class GameConfig(WareraModel):
     Fields are loosely typed since the exact schema is not defined in the spec.
     Raw data is accessible via model's __pydantic_extra__ or as dict via model_dump().
     """
+
     items: dict[str, Any] | None = None
     resources: dict[str, Any] | None = None
     industries: dict[str, Any] | None = None

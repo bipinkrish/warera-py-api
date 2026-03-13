@@ -20,7 +20,9 @@ class ItemTradingResource(BaseResource):
         raw = await self._get("itemTrading.getPrices")
         if isinstance(raw, dict):
             return {
-                k: ItemPrice.model_validate(v) if isinstance(v, dict) else ItemPrice(price=float(v), item_code=k)
+                k: ItemPrice.model_validate(v)
+                if isinstance(v, dict)
+                else ItemPrice(price=float(v), item_code=k)
                 for k, v in raw.items()
             }
         if isinstance(raw, list):
@@ -47,7 +49,11 @@ class ItemTradingResource(BaseResource):
         )
         if isinstance(raw, list):
             return [TradingOrder.model_validate(o) for o in raw]
-        items = raw.get("items", raw.get("data", [])) if isinstance(raw, dict) else []
+        if isinstance(raw, dict):
+            raw_items = raw.get("items", raw.get("data", []))
+            items = raw_items if isinstance(raw_items, list) else []
+        else:
+            items = []
         return [TradingOrder.model_validate(o) for o in items]
 
     async def get_offer(self, item_offer_id: str) -> ItemOffer:

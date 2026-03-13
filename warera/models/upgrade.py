@@ -8,7 +8,7 @@ class Upgrade(WareraModel):
     type: str | None = None
     level: int | None = None
     entity_id: str | None = None
-    entity_type: str | None = None   # "region" | "company" | "mu"
+    entity_type: str | None = None  # "region" | "company" | "mu"
     region_id: str | None = None
     company_id: str | None = None
     mu_id: str | None = None

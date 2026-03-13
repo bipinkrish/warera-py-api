@@ -27,6 +27,7 @@ async def client():
 # country
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_get_all_countries(client):
     countries = await client.country.get_all()
@@ -51,6 +52,7 @@ async def test_find_country_by_name(client):
 # game_config
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_get_game_dates(client):
     dates = await client.game_config.get_dates()
@@ -67,6 +69,7 @@ async def test_get_game_config(client):
 # item_trading
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_get_item_prices(client):
     prices = await client.item_trading.get_prices()
@@ -76,6 +79,7 @@ async def test_get_item_prices(client):
 # ---------------------------------------------------------------------------
 # region
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.anyio
 async def test_get_all_regions(client):
@@ -88,6 +92,7 @@ async def test_get_all_regions(client):
 # battle
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_get_battles_paginated(client):
     page = await client.battle.get_many(is_active=True, limit=5)
@@ -98,6 +103,7 @@ async def test_get_battles_paginated(client):
 # ranking
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_get_user_wealth_ranking(client):
     entries = await client.ranking.get(RankingType.USER_WEALTH)
@@ -107,6 +113,7 @@ async def test_get_user_wealth_ranking(client):
 # ---------------------------------------------------------------------------
 # search
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.anyio
 async def test_search_returns_results(client):
@@ -119,12 +126,13 @@ async def test_search_returns_results(client):
 # Batch
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_batch_gets_all_countries_and_prices(client):
     """Verify that a batch request with mixed procedures resolves correctly."""
     async with client.batch() as batch:
-        prices_item  = batch.add("itemTrading.getPrices", {})
-        config_item  = batch.add("gameConfig.getDates", {})
+        prices_item = batch.add("itemTrading.getPrices", {})
+        config_item = batch.add("gameConfig.getDates", {})
 
     assert prices_item.ok
     assert config_item.ok

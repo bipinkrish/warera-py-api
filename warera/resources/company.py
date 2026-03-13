@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 from .._batch import fetch_many_by_ids
@@ -45,7 +46,7 @@ class CompanyResource(BaseResource):
     # Pagination helpers
     # ------------------------------------------------------------------
 
-    async def paginate(self, **kwargs: Any):
+    async def paginate(self, **kwargs: Any) -> AsyncIterator[Company]:
         """Async generator over all companies matching the given filters."""
         async for item in paginate(self.get_companies, **kwargs):
             yield item

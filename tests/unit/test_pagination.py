@@ -11,7 +11,7 @@ from warera.models.user import User
 
 def _make_page(items: list, next_cursor: str | None = None) -> CursorPage[User]:
     return CursorPage(
-        items=[User(id=str(i), username=f"user{i}") for i in items],
+        items=[User(_id=str(i), username=f"user{i}") for i in items],
         next_cursor=next_cursor,
         has_more=next_cursor is not None,
     )
@@ -30,9 +30,9 @@ async def test_paginate_single_page():
 @pytest.mark.asyncio
 async def test_paginate_multiple_pages():
     pages = {
-        None:    _make_page([1, 2], next_cursor="cur1"),
-        "cur1":  _make_page([3, 4], next_cursor="cur2"),
-        "cur2":  _make_page([5],    next_cursor=None),
+        None: _make_page([1, 2], next_cursor="cur1"),
+        "cur1": _make_page([3, 4], next_cursor="cur2"),
+        "cur2": _make_page([5], next_cursor=None),
     }
 
     async def fetch(cursor=None, **kwargs) -> CursorPage[User]:
@@ -46,8 +46,8 @@ async def test_paginate_multiple_pages():
 @pytest.mark.asyncio
 async def test_collect_all_returns_flat_list():
     pages = {
-        None:   _make_page([1, 2], next_cursor="c1"),
-        "c1":   _make_page([3],    next_cursor=None),
+        None: _make_page([1, 2], next_cursor="c1"),
+        "c1": _make_page([3], next_cursor=None),
     }
 
     async def fetch(cursor=None, **kwargs) -> CursorPage[User]:

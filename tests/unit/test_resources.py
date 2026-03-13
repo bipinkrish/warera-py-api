@@ -22,6 +22,7 @@ def _mock_http(return_value) -> MagicMock:
 # Country
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_country_get_all_from_dict():
     raw = {
@@ -69,6 +70,7 @@ async def test_country_find_by_name_not_found():
 # ---------------------------------------------------------------------------
 # Battle
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_battle_get_many_returns_cursor_page():
@@ -124,6 +126,7 @@ async def test_battle_get_active_collects_all_pages():
 # ItemTrading
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_item_trading_get_prices_from_dict():
     raw = {
@@ -159,6 +162,7 @@ async def test_item_trading_get_price_missing_returns_none():
 # ---------------------------------------------------------------------------
 # User
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_user_get_lite_parses_model():

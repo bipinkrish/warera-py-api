@@ -23,6 +23,7 @@ BASE = "https://api2.warera.io/trpc"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_trpc_ok(data: object) -> dict:
     return {"result": {"data": data}}
 
@@ -34,6 +35,7 @@ def _make_trpc_error(message: str, http_status: int = 500) -> dict:
 # ---------------------------------------------------------------------------
 # Single GET
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 @pytest.mark.asyncio
@@ -75,9 +77,7 @@ async def test_get_strips_none_params():
 @respx.mock
 @pytest.mark.asyncio
 async def test_get_injects_api_key_header():
-    respx.get(url__startswith=BASE).mock(
-        return_value=httpx.Response(200, json=_make_trpc_ok({}))
-    )
+    respx.get(url__startswith=BASE).mock(return_value=httpx.Response(200, json=_make_trpc_ok({})))
 
     async with HttpSession(api_key="secret-key", base_url=BASE) as session:
         await session.get("user.getUserLite", {"userId": "1"})
@@ -89,9 +89,7 @@ async def test_get_injects_api_key_header():
 @respx.mock
 @pytest.mark.asyncio
 async def test_get_no_api_key_header_when_not_set():
-    respx.get(url__startswith=BASE).mock(
-        return_value=httpx.Response(200, json=_make_trpc_ok({}))
-    )
+    respx.get(url__startswith=BASE).mock(return_value=httpx.Response(200, json=_make_trpc_ok({})))
 
     async with HttpSession(base_url=BASE) as session:  # no key
         await session.get("user.getUserLite", {"userId": "1"})
@@ -126,15 +124,19 @@ async def test_get_raises_not_found_on_404():
 # Batch POST
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 @pytest.mark.asyncio
 async def test_batch_post_builds_correct_url():
     """URL must be comma-joined procedures + ?batch=1."""
     route = respx.post(url__startswith=BASE).mock(
-        return_value=httpx.Response(200, json=[
-            _make_trpc_ok({"id": "1"}),
-            _make_trpc_ok({"id": "2"}),
-        ])
+        return_value=httpx.Response(
+            200,
+            json=[
+                _make_trpc_ok({"id": "1"}),
+                _make_trpc_ok({"id": "2"}),
+            ],
+        )
     )
 
     async with HttpSession(base_url=BASE) as session:
@@ -155,10 +157,13 @@ async def test_batch_post_builds_correct_url():
 async def test_batch_post_body_uses_string_integer_keys():
     """Body keys must be '0', '1', '2' — string integers, not actual ints."""
     route = respx.post(url__startswith=BASE).mock(
-        return_value=httpx.Response(200, json=[
-            _make_trpc_ok({"countryId": "7"}),
-            _make_trpc_ok({"userId": "42"}),
-        ])
+        return_value=httpx.Response(
+            200,
+            json=[
+                _make_trpc_ok({"countryId": "7"}),
+                _make_trpc_ok({"userId": "42"}),
+            ],
+        )
     )
 
     async with HttpSession(base_url=BASE) as session:
@@ -180,11 +185,14 @@ async def test_batch_post_body_uses_string_integer_keys():
 async def test_batch_post_mixed_procedures():
     """Different procedures can be mixed in one batch."""
     respx.post(url__startswith=BASE).mock(
-        return_value=httpx.Response(200, json=[
-            _make_trpc_ok({"name": "Ukraine"}),
-            _make_trpc_ok({"presidentId": "99"}),
-            _make_trpc_ok({}),
-        ])
+        return_value=httpx.Response(
+            200,
+            json=[
+                _make_trpc_ok({"name": "Ukraine"}),
+                _make_trpc_ok({"presidentId": "99"}),
+                _make_trpc_ok({}),
+            ],
+        )
     )
 
     async with HttpSession(base_url=BASE) as session:
@@ -203,10 +211,13 @@ async def test_batch_post_mixed_procedures():
 async def test_batch_post_raises_batch_error_on_partial_failure():
     """WareraBatchError must be raised if any item in the batch fails."""
     respx.post(url__startswith=BASE).mock(
-        return_value=httpx.Response(200, json=[
-            _make_trpc_ok({"id": "1"}),
-            _make_trpc_error("Not found", 404),
-        ])
+        return_value=httpx.Response(
+            200,
+            json=[
+                _make_trpc_ok({"id": "1"}),
+                _make_trpc_error("Not found", 404),
+            ],
+        )
     )
 
     async with HttpSession(base_url=BASE) as session:

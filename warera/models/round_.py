@@ -18,6 +18,7 @@ class Round(WareraModel):
 
 class Hit(WareraModel):
     """A single hit entry from round.getLastHits."""
+
     user_id: str | None = None
     country_id: str | None = None
     mu_id: str | None = None

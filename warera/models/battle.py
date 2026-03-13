@@ -8,8 +8,12 @@ from .common import WareraModel
 class Battle(WareraModel):
     war_id: str | None = None
     region_id: str | None = None
-    attacker_country_id: str | None = Field(default=None, validation_alias=AliasPath("attacker", "country"))
-    defender_country_id: str | None = Field(default=None, validation_alias=AliasPath("defender", "country"))
+    attacker_country_id: str | None = Field(
+        default=None, validation_alias=AliasPath("attacker", "country")
+    )
+    defender_country_id: str | None = Field(
+        default=None, validation_alias=AliasPath("defender", "country")
+    )
     attacker_score: float | None = None
     defender_score: float | None = None
     is_active: bool | None = None
@@ -23,6 +27,7 @@ class Battle(WareraModel):
 
 class BattleLive(WareraModel):
     """Response from battle.getLiveBattleData."""
+
     battle_id: str | None = None
     round_number: int | None = None
     attacker_score: float | None = None

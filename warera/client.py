@@ -108,25 +108,25 @@ class WareraClient:
         self._batch_size = batch_size
 
         # --- Resource namespaces ---
-        self.user           = UserResource(self._http)
-        self.company        = CompanyResource(self._http)
-        self.country        = CountryResource(self._http)
-        self.government     = GovernmentResource(self._http)
-        self.region         = RegionResource(self._http)
-        self.battle         = BattleResource(self._http)
+        self.user = UserResource(self._http)
+        self.company = CompanyResource(self._http)
+        self.country = CountryResource(self._http)
+        self.government = GovernmentResource(self._http)
+        self.region = RegionResource(self._http)
+        self.battle = BattleResource(self._http)
         self.battle_ranking = BattleRankingResource(self._http)
-        self.round          = RoundResource(self._http)
-        self.event          = EventResource(self._http)
-        self.item_trading   = ItemTradingResource(self._http)
-        self.work_offer     = WorkOfferResource(self._http)
-        self.worker         = WorkerResource(self._http)
-        self.mu             = MUResource(self._http)
-        self.ranking        = RankingResource(self._http)
-        self.transaction    = TransactionResource(self._http)
-        self.upgrade        = UpgradeResource(self._http)
-        self.article        = ArticleResource(self._http)
-        self.search         = SearchResource(self._http)
-        self.game_config    = GameConfigResource(self._http)
+        self.round = RoundResource(self._http)
+        self.event = EventResource(self._http)
+        self.item_trading = ItemTradingResource(self._http)
+        self.work_offer = WorkOfferResource(self._http)
+        self.worker = WorkerResource(self._http)
+        self.mu = MUResource(self._http)
+        self.ranking = RankingResource(self._http)
+        self.transaction = TransactionResource(self._http)
+        self.upgrade = UpgradeResource(self._http)
+        self.article = ArticleResource(self._http)
+        self.search = SearchResource(self._http)
+        self.game_config = GameConfigResource(self._http)
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -173,7 +173,4 @@ class WareraClient:
 
     def __repr__(self) -> str:
         has_key = bool(self._http._api_key)
-        return (
-            f"WareraClient(authenticated={has_key}, "
-            f"base_url={self._http._base_url!r})"
-        )
+        return f"WareraClient(authenticated={has_key}, base_url={self._http._base_url!r})"

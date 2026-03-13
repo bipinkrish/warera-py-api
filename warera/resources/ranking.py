@@ -27,5 +27,9 @@ class RankingResource(BaseResource):
         raw = await self._get("ranking.getRanking", rankingType=ranking_type)
         if isinstance(raw, list):
             return [RankingEntry.model_validate(r) for r in raw]
-        items = raw.get("items", raw.get("data", [])) if isinstance(raw, dict) else []
+        if isinstance(raw, dict):
+            raw_items = raw.get("items", raw.get("data", []))
+            items = raw_items if isinstance(raw_items, list) else []
+        else:
+            items = []
         return [RankingEntry.model_validate(r) for r in items]
