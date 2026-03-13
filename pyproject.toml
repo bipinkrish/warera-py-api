@@ -1,22 +1,17 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "warera-client"
 version = "0.1.0"
 description = "A robust Python client for the WarEra tRPC API"
 readme = "README.md"
 requires-python = ">=3.10"
+
 authors = [
     { name = "Bipin Krishna", email = "bipinkrish4@gmail.com" },
 ]
+
 license = { text = "MIT" }
 keywords = ["warera", "game", "api", "client", "trpc"]
-[project.urls]
-Homepage = "https://github.com/bipinkrish/warera-py-api"
-Repository = "https://github.com/bipinkrish/warera-py-api"
-Issues = "https://github.com/bipinkrish/warera-py-api/issues"
+
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -27,11 +22,17 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Games/Entertainment",
 ]
+
 dependencies = [
     "httpx>=0.27",
     "pydantic>=2.0",
     "tenacity>=8.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/bipinkrish/warera-py-api"
+Repository = "https://github.com/bipinkrish/warera-py-api"
+Issues = "https://github.com/bipinkrish/warera-py-api/issues"
 
 [project.optional-dependencies]
 dev = [

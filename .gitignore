@@ -2,3 +2,6 @@ venv/
 __pycache__/
 .env
 .pytest_cache/
+build/
+.ruff_cache/
+warera_client.egg-info/
