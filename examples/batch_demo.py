@@ -48,7 +48,7 @@ async def example_many_companies(country_id: str) -> None:
         users = await client.user.get_many(user_ids)
         print(f"Fetched {len(users)} users via batch")
         for u in users[:3]:
-            print(f"  {u.username} (level {u.level})")
+            print(f"  {u.username} (leveling {u.leveling})")
 
 
 async def example_ruling_parties(country_ids: list[str]) -> None:
@@ -66,7 +66,7 @@ async def example_ruling_parties(country_ids: list[str]) -> None:
         for cid, gov_item in zip(country_ids, gov_items, strict=True):
             if gov_item.ok:
                 data = gov_item.result
-                print(f"Country {cid}: president={data.get('presidentId', 'none')}")
+                print(f"Country {cid}: president={data.get('president', 'none')}")
             else:
                 print(f"Country {cid}: ERROR — {gov_item._error}")
 
@@ -90,6 +90,6 @@ async def example_partial_batch_error() -> None:
 if __name__ == "__main__":
     asyncio.run(example_mixed_batch())
     print()
-    # Uncomment to test with real IDs:
-    # asyncio.run(example_many_companies("7"))
-    # asyncio.run(example_ruling_parties(["7", "8", "9"]))
+
+    asyncio.run(example_many_companies("6813b6d546e731854c7ac862"))
+    asyncio.run(example_ruling_parties(["6813b6d546e731854c7ac85c", "6813b6d446e731854c7ac7ae"]))
