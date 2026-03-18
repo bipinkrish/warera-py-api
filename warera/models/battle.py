@@ -1,23 +1,31 @@
 from typing import Any
 
-from pydantic import AliasPath, Field
+from pydantic import AliasChoices, AliasPath, Field
 
 from .common import WareraModel
 
 
 class Battle(WareraModel):
-    war_id: str | None = None
-    region_id: str | None = None
+    war_id: str | None = Field(
+        default=None, validation_alias=AliasChoices("war", "warId", "war_id")
+    )
+    region_id: str | None = Field(
+        default=None, validation_alias=AliasChoices("region", "regionId", "region_id")
+    )
     attacker_country_id: str | None = Field(
-        default=None, validation_alias=AliasPath("attacker", "country")
+        default=None,
+        validation_alias=AliasChoices(AliasPath("attacker", "country"), "attacker_country_id"),
     )
     defender_country_id: str | None = Field(
-        default=None, validation_alias=AliasPath("defender", "country")
+        default=None,
+        validation_alias=AliasChoices(AliasPath("defender", "country"), "defender_country_id"),
     )
     attacker_score: float | None = None
     defender_score: float | None = None
     is_active: bool | None = None
-    winner_country_id: str | None = None
+    winner_country_id: str | None = Field(
+        default=None, validation_alias=AliasChoices("winner_country", "winnerCountry", "winner_country_id")
+    )
     start_time: str | None = None
     end_time: str | None = None
     current_round: int | dict[str, Any] | None = None

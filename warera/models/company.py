@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+from pydantic import AliasChoices, Field
 from .common import WareraModel
 
 
 class Company(WareraModel):
     id: str | None = None
     name: str | None = None
-    owner_id: str | None = None
-    country_id: str | None = None
-    region_id: str | None = None
+    owner_id: str | None = Field(
+        default=None, validation_alias=AliasChoices("owner", "ownerId", "owner_id")
+    )
+    country_id: str | None = Field(
+        default=None, validation_alias=AliasChoices("country", "countryId", "country_id")
+    )
+    region_id: str | None = Field(
+        default=None, validation_alias=AliasChoices("region", "regionId", "region_id")
+    )
     type: str | None = None
     quality: int | None = None
     size: int | None = None
