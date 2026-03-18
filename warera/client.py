@@ -174,3 +174,6 @@ class WareraClient:
     def __repr__(self) -> str:
         has_key = bool(self._http._api_key)
         return f"WareraClient(authenticated={has_key}, base_url={self._http._base_url!r})"
+
+    def __str__(self) -> str:
+        return repr(self)

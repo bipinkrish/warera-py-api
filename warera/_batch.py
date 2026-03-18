@@ -52,6 +52,10 @@ class BatchItem(Generic[T]):
     _error: WareraError | None = field(default=None, repr=False)
     _resolved: bool = field(default=False, repr=False)
 
+    def __str__(self) -> str:
+        status = "resolved" if self._resolved else "pending"
+        return f"<BatchItem {self.procedure} ({status})>"
+
     @property
     def result(self) -> T:
         if not self._resolved:
@@ -98,6 +102,12 @@ class BatchSession:
         self._http = http
         self._batch_size = batch_size
         self._queue: list[BatchItem[Any]] = []
+
+    def __str__(self) -> str:
+        return f"<BatchSession queued={len(self._queue)}>"
+
+    def __len__(self) -> int:
+        return len(self._queue)
 
     def add(self, procedure: str, input_: dict[str, Any] | None = None) -> BatchItem[Any]:
         """

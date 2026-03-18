@@ -12,6 +12,9 @@ class BaseResource:
     def __init__(self, http: HttpSession) -> None:
         self._http = http
 
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__}>"
+
     async def _get(self, procedure: str, **params: Any) -> Any:
         """Call a single GET procedure, stripping None values from params."""
         cleaned = {k: v for k, v in params.items() if v is not None}

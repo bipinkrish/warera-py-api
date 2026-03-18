@@ -32,6 +32,18 @@ class WareraModel(BaseModel):
     model_config = _base_config()
     id: str | None = Field(default=None, alias="_id")
 
+    def __str__(self) -> str:
+        """
+        Generic user-friendly string representation.
+        Shows the class name and the most 'identifying' field found.
+        """
+        # Priority for identifying fields
+        for field_name in ("username", "name", "id"):
+            val = getattr(self, field_name, None)
+            if val is not None:
+                return f"<{self.__class__.__name__} {val}>"
+        return f"<{self.__class__.__name__}>"
+
 
 class CursorPage(WareraModel, Generic[T]):
     """
@@ -48,6 +60,14 @@ class CursorPage(WareraModel, Generic[T]):
     items: list[T]
     next_cursor: str | None = None
     has_more: bool = False
+
+    def __iter__(self):  # type: ignore[no-untyped-def]
+        """Make the page iterable directly over its items."""
+        return iter(self.items)
+
+    def __len__(self) -> int:
+        """Return the number of items on this page."""
+        return len(self.items)
 
     @classmethod
     def from_raw(cls, raw: Any, item_type: type[T]) -> CursorPage[T]:
