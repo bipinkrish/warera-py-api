@@ -72,7 +72,7 @@ from .models import (
     WorkOffer,
 )
 
-__version__ = "0.2.1"
+__version__ = "0.1.4"
 
 __all__ = [
     # Client

@@ -48,6 +48,7 @@ from .resources.user import UserResource
 from .resources.work_offer import WorkOfferResource
 from .resources.worker import WorkerResource
 
+
 class WareraClient:
     """
     Async client for the WarEra tRPC API (v0.17.4-beta).

@@ -210,7 +210,7 @@ async def fetch_many_by_ids(
             # Partial failure — return None for failed indices so callers
             # can filter them out without losing the rest of the chunk.
             return [
-                exc.results[i] if i in exc.results else None
+                exc.results.get(i, None)
                 for i in range(len(chunk))
             ]
 

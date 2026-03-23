@@ -13,6 +13,7 @@ are respected at runtime — they are not hard-wired in a static decorator.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 from typing import Any
@@ -213,10 +214,8 @@ class HttpSession:
             retry_after: float | None = None
             raw_header = resp.headers.get("Retry-After")
             if raw_header is not None:
-                try:
+                with contextlib.suppress(ValueError):
                     retry_after = float(raw_header)
-                except ValueError:
-                    pass
             try:
                 body = resp.json()
             except Exception:
