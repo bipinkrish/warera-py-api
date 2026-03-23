@@ -68,6 +68,7 @@ from .models import (
     Upgrade,
     User,
     Worker,
+    WorkerCount,
     WorkOffer,
 )
 
@@ -124,4 +125,5 @@ __all__ = [
     "User",
     "WorkOffer",
     "Worker",
+    "WorkerCount",
 ]

@@ -33,18 +33,24 @@ from .client import WareraClient as _AsyncClient
 
 
 def _run(coro: Any) -> Any:
-    """Run a coroutine synchronously, reusing an existing loop if available."""
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            # Inside an existing async context (e.g. Jupyter) — use nest_asyncio or raise
-            import nest_asyncio
+    """
+    Run a coroutine synchronously.
 
-            nest_asyncio.apply()
-            return loop.run_until_complete(coro)
+    Uses asyncio.get_running_loop() to safely detect whether we are already
+    inside a running event loop (e.g. Jupyter). The older get_event_loop()
+    is deprecated in Python 3.10 and raises a RuntimeError in 3.12 when
+    called with no current loop, making get_running_loop() the correct choice.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+        # Already inside a running event loop (e.g. Jupyter) — use nest_asyncio.
+        import nest_asyncio
+
+        nest_asyncio.apply()
+        return loop.run_until_complete(coro)
     except RuntimeError:
-        pass
-    return asyncio.run(coro)
+        # No running loop — safe to call asyncio.run().
+        return asyncio.run(coro)
 
 
 def _sync_generator(async_gen_fn: Any, *args: Any, **kwargs: Any) -> list[Any]:

@@ -7,6 +7,8 @@ Two call modes:
 
 Auth is optional: X-API-Key header is injected only when a key is present.
 Retry logic covers 429 (rate limit) and 5xx errors with exponential backoff.
+The retry parameters (max_retries, retry_backoff_factor) passed to HttpSession
+are respected at runtime — they are not hard-wired in a static decorator.
 """
 
 from __future__ import annotations
@@ -18,7 +20,7 @@ from urllib.parse import quote
 
 import httpx
 from tenacity import (
-    retry,
+    AsyncRetrying,
     retry_if_exception,
     stop_after_attempt,
     wait_exponential,
@@ -30,7 +32,8 @@ from .exceptions import (
     _raise_for_status,
 )
 
-_DEFAULT_BASE_URL = "https://api2.warera.io/trpc"
+# Public constant so client.py can import it instead of duplicating the string.
+DEFAULT_BASE_URL = "https://api2.warera.io/trpc"
 _ENV_KEY = "WARERA_API_KEY"
 
 
@@ -50,7 +53,7 @@ class HttpSession:
     def __init__(
         self,
         api_key: str | None = None,
-        base_url: str = _DEFAULT_BASE_URL,
+        base_url: str = DEFAULT_BASE_URL,
         timeout: float = 10.0,
         max_retries: int = 3,
         retry_backoff_factor: float = 0.5,
@@ -97,6 +100,25 @@ class HttpSession:
         return {}
 
     # ------------------------------------------------------------------
+    # Retry helper — built at call time so max_retries / retry_backoff_factor
+    # are actually honoured instead of being silently ignored by a static
+    # @retry decorator with hardcoded values.
+    # ------------------------------------------------------------------
+
+    def _retrying(self) -> AsyncRetrying:
+        """Return an AsyncRetrying instance configured from this session's params."""
+        return AsyncRetrying(
+            retry=retry_if_exception(_is_retryable),
+            stop=stop_after_attempt(self._max_retries),
+            wait=wait_exponential(
+                multiplier=self._retry_backoff,
+                min=self._retry_backoff,
+                max=10,
+            ),
+            reraise=True,
+        )
+
+    # ------------------------------------------------------------------
     # Single call  →  GET /procedure?input=<json>
     # ------------------------------------------------------------------
 
@@ -106,7 +128,6 @@ class HttpSession:
         Returns the parsed `result.data` from the response.
         """
         await self._ensure_client()
-        assert self._client is not None
 
         clean = {k: v for k, v in params.items() if v is not None}
         encoded = quote(json.dumps(clean, separators=(",", ":")), safe="")
@@ -115,17 +136,18 @@ class HttpSession:
         response = await self._get_with_retry(url)
         return self._unwrap_single(response, procedure)
 
-    @retry(
-        retry=retry_if_exception(_is_retryable),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=0.5, min=0.5, max=10),
-        reraise=True,
-    )
     async def _get_with_retry(self, url: str) -> httpx.Response:
-        assert self._client is not None
-        resp = await self._client.get(url, headers=self._auth_headers())
-        self._check_response(resp)
-        return resp
+        result: httpx.Response | None = None
+        async for attempt in self._retrying():
+            with attempt:
+                if self._client is None:
+                    raise RuntimeError(
+                        "HTTP client is not initialised — call __aenter__ first"
+                    )
+                resp = await self._client.get(url, headers=self._auth_headers())
+                self._check_response(resp)
+                result = resp
+        return result  # type: ignore[return-value]
 
     # ------------------------------------------------------------------
     # Batch call  →  POST /proc0,proc1,...?batch=1   body: {"0": {}, ...}
@@ -142,7 +164,6 @@ class HttpSession:
         as `procedures`. Raises WareraBatchError if any item fails.
         """
         await self._ensure_client()
-        assert self._client is not None
 
         if not procedures:
             return []
@@ -155,21 +176,26 @@ class HttpSession:
         raw_list = await self._post_batch_with_retry(url, body)
         return self._unwrap_batch(raw_list, procedures)
 
-    @retry(
-        retry=retry_if_exception(_is_retryable),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=0.5, min=0.5, max=10),
-        reraise=True,
-    )
-    async def _post_batch_with_retry(self, url: str, body: dict[str, Any]) -> list[dict[str, Any]]:
-        assert self._client is not None
-        headers = {**self._auth_headers(), "Content-Type": "application/json"}
-        resp = await self._client.post(url, json=body, headers=headers)
-        self._check_response(resp)
-        data = resp.json()
-        if not isinstance(data, list):
-            raise ValueError(f"Expected list from batch endpoint, got {type(data).__name__}")
-        return data
+    async def _post_batch_with_retry(
+        self, url: str, body: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        result: list[dict[str, Any]] | None = None
+        async for attempt in self._retrying():
+            with attempt:
+                if self._client is None:
+                    raise RuntimeError(
+                        "HTTP client is not initialised — call __aenter__ first"
+                    )
+                headers = {**self._auth_headers(), "Content-Type": "application/json"}
+                resp = await self._client.post(url, json=body, headers=headers)
+                self._check_response(resp)
+                data = resp.json()
+                if not isinstance(data, list):
+                    raise ValueError(
+                        f"Expected list from batch endpoint, got {type(data).__name__}"
+                    )
+                result = data
+        return result  # type: ignore[return-value]
 
     # ------------------------------------------------------------------
     # Response parsing helpers
@@ -178,12 +204,30 @@ class HttpSession:
     @staticmethod
     def _check_response(resp: httpx.Response) -> None:
         """Raise the appropriate WareraHTTPError for non-2xx responses."""
-        if resp.status_code >= 400:
+        if resp.status_code < 400:
+            return
+
+        # Surface the Retry-After header value when rate-limited so callers
+        # can respect it without having to inspect the raw response themselves.
+        if resp.status_code == 429:
+            retry_after: float | None = None
+            raw_header = resp.headers.get("Retry-After")
+            if raw_header is not None:
+                try:
+                    retry_after = float(raw_header)
+                except ValueError:
+                    pass
             try:
                 body = resp.json()
             except Exception:
                 body = resp.text
-            _raise_for_status(resp.status_code, body)
+            raise WareraRateLimitError(retry_after=retry_after, response_body=body)
+
+        try:
+            body = resp.json()
+        except Exception:
+            body = resp.text
+        _raise_for_status(resp.status_code, body)
 
     @staticmethod
     def _unwrap_single(resp: httpx.Response, procedure: str) -> Any:
@@ -200,14 +244,15 @@ class HttpSession:
 
         if "error" in data:
             err = data["error"]
-            _msg = err.get("message", "Unknown tRPC error")
             code = err.get("data", {}).get("httpStatus", 500)
             _raise_for_status(code, err)
 
         try:
             return data["result"]["data"]
         except (KeyError, TypeError) as exc:
-            raise ValueError(f"Unexpected tRPC response shape from {procedure}: {data}") from exc
+            raise ValueError(
+                f"Unexpected tRPC response shape from {procedure}: {data}"
+            ) from exc
 
     @staticmethod
     def _unwrap_batch(raw_list: list[dict[str, Any]], procedures: list[str]) -> list[Any]:
@@ -230,7 +275,6 @@ class HttpSession:
         for i, (item, proc) in enumerate(zip(raw_list, procedures, strict=True)):
             if "error" in item:
                 err = item["error"]
-                _msg = err.get("message", "Unknown error")
                 code = err.get("data", {}).get("httpStatus", 500)
                 try:
                     _raise_for_status(code, err)

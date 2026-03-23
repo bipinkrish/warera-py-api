@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar
 
 from .exceptions import WareraBatchError, WareraError
 
@@ -159,9 +159,13 @@ class BatchSession:
         return self
 
     async def __aexit__(self, exc_type: Any, *_: Any) -> None:
-        # Only flush if no exception is propagating
-        if exc_type is None:
-            await self.flush()
+        # Only flush if no exception is propagating; always clear the queue
+        # in a finally block so the session is left in a clean state regardless.
+        try:
+            if exc_type is None:
+                await self.flush()
+        finally:
+            self._queue.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -188,7 +192,9 @@ async def fetch_many_by_ids(
         batch_size: Max IDs per batch POST (default 50)
 
     Returns:
-        List of raw API responses in the same order as `ids`.
+        List of raw API responses in the same order as `ids`. Entries for
+        IDs the server could not find are returned as None rather than raising
+        and dropping the entire chunk — callers should filter out None values.
     """
     if not ids:
         return []
@@ -198,7 +204,15 @@ async def fetch_many_by_ids(
     async def fetch_chunk(chunk: list[str]) -> list[Any]:
         procedures = [procedure] * len(chunk)
         inputs = [{id_param: id_} for id_ in chunk]
-        return cast("list[Any]", await http.post_batch(procedures, inputs))
+        try:
+            return await http.post_batch(procedures, inputs)
+        except WareraBatchError as exc:
+            # Partial failure — return None for failed indices so callers
+            # can filter them out without losing the rest of the chunk.
+            return [
+                exc.results[i] if i in exc.results else None
+                for i in range(len(chunk))
+            ]
 
     chunk_results = await asyncio.gather(*[fetch_chunk(c) for c in chunks])
     return [item for sublist in chunk_results for item in sublist]

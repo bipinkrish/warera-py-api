@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import Any
 
 from ._batch import BatchSession
-from ._http import HttpSession
+from ._http import DEFAULT_BASE_URL, HttpSession
 from .resources.article import ArticleResource
 from .resources.battle import BattleResource
 from .resources.battle_ranking import BattleRankingResource
@@ -47,9 +47,6 @@ from .resources.upgrade import UpgradeResource
 from .resources.user import UserResource
 from .resources.work_offer import WorkOfferResource
 from .resources.worker import WorkerResource
-
-_DEFAULT_BASE_URL = "https://api2.warera.io/trpc"
-
 
 class WareraClient:
     """
@@ -81,7 +78,7 @@ class WareraClient:
         self,
         api_key: str | None = None,
         *,
-        base_url: str = _DEFAULT_BASE_URL,
+        base_url: str = DEFAULT_BASE_URL,
         timeout: float = 10.0,
         max_retries: int = 3,
         retry_backoff_factor: float = 0.5,

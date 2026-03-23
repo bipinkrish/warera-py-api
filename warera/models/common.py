@@ -69,6 +69,9 @@ class CursorPage(WareraModel, Generic[T]):
         """Return the number of items on this page."""
         return len(self.items)
 
+    def __str__(self) -> str:
+        return f"<CursorPage items={len(self.items)} has_more={self.has_more}>"
+
     @classmethod
     def from_raw(cls, raw: Any, item_type: type[T]) -> CursorPage[T]:
         """
