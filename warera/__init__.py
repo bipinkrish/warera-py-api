@@ -1,5 +1,5 @@
 """
-warera-client — Python client for the WarEra tRPC API (v0.17.4-beta)
+warera-client — Python client for the WarEra tRPC API (v0.24.1-beta)
 
 Quick start:
     import asyncio
@@ -19,9 +19,11 @@ Sync:
 """
 
 from ._enums import (
+    ActionLogActionType,
     ArticleType,
     BattleDirection,
     BattleFilter,
+    BattleOrderSide,
     BattleRankingDataType,
     BattleRankingEntityType,
     BattleRankingSide,
@@ -43,14 +45,17 @@ from .exceptions import (
     WareraValidationError,
 )
 from .models import (
+    ActionLog,
     Article,
     ArticleLite,
     Battle,
     BattleLive,
+    BattleOrder,
     BattleRankingEntry,
     Company,
     Country,
     CursorPage,
+    Equipment,
     Event,
     GameConfig,
     GameDates,
@@ -72,7 +77,7 @@ from .models import (
     WorkOffer,
 )
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 __all__ = [
     # Client
@@ -88,9 +93,11 @@ __all__ = [
     "WareraValidationError",
     "WareraBatchError",
     # Enums
+    "ActionLogActionType",
     "ArticleType",
     "BattleDirection",
     "BattleFilter",
+    "BattleOrderSide",
     "BattleRankingDataType",
     "BattleRankingEntityType",
     "BattleRankingSide",
@@ -99,14 +106,17 @@ __all__ = [
     "TransactionType",
     "UpgradeType",
     # Models
+    "ActionLog",
     "Article",
     "ArticleLite",
     "Battle",
     "BattleLive",
+    "BattleOrder",
     "BattleRankingEntry",
     "Company",
     "Country",
     "CursorPage",
+    "Equipment",
     "Event",
     "GameConfig",
     "GameDates",

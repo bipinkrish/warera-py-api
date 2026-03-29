@@ -28,14 +28,17 @@ from typing import Any
 
 from ._batch import BatchSession
 from ._http import DEFAULT_BASE_URL, HttpSession
+from .resources.action_log import ActionLogResource
 from .resources.article import ArticleResource
 from .resources.battle import BattleResource
+from .resources.battle_order import BattleOrderResource
 from .resources.battle_ranking import BattleRankingResource
 from .resources.company import CompanyResource
 from .resources.country import CountryResource
 from .resources.event import EventResource
 from .resources.game_config import GameConfigResource
 from .resources.government import GovernmentResource
+from .resources.inventory import InventoryResource
 from .resources.item_trading import ItemTradingResource
 from .resources.mu import MUResource
 from .resources.ranking import RankingResource
@@ -51,7 +54,7 @@ from .resources.worker import WorkerResource
 
 class WareraClient:
     """
-    Async client for the WarEra tRPC API (v0.17.4-beta).
+    Async client for the WarEra tRPC API (v0.24.1-beta).
 
     All resource namespaces are exposed as attributes:
         client.user          → UserResource
@@ -61,6 +64,7 @@ class WareraClient:
         client.region        → RegionResource
         client.battle        → BattleResource
         client.battle_ranking→ BattleRankingResource
+        client.battle_order  → BattleOrderResource
         client.round         → RoundResource
         client.event         → EventResource
         client.item_trading  → ItemTradingResource
@@ -73,6 +77,8 @@ class WareraClient:
         client.article       → ArticleResource
         client.search        → SearchResource
         client.game_config   → GameConfigResource
+        client.inventory     → InventoryResource
+        client.action_log    → ActionLogResource
     """
 
     def __init__(
@@ -113,6 +119,7 @@ class WareraClient:
         self.region = RegionResource(self._http)
         self.battle = BattleResource(self._http)
         self.battle_ranking = BattleRankingResource(self._http)
+        self.battle_order = BattleOrderResource(self._http)
         self.round = RoundResource(self._http)
         self.event = EventResource(self._http)
         self.item_trading = ItemTradingResource(self._http)
@@ -125,6 +132,8 @@ class WareraClient:
         self.article = ArticleResource(self._http)
         self.search = SearchResource(self._http)
         self.game_config = GameConfigResource(self._http)
+        self.inventory = InventoryResource(self._http)
+        self.action_log = ActionLogResource(self._http)
 
     # ------------------------------------------------------------------
     # Lifecycle

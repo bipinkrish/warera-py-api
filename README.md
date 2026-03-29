@@ -1,6 +1,6 @@
 # warera-client
 
-A robust Python client for the [WarEra](https://warera.io) tRPC API — schema v0.17.4-beta.
+A robust Python client for the [WarEra](https://warera.io) tRPC API — schema v0.24.1-beta.
 
 ```python
 async with WareraClient(api_key="YOUR_KEY") as client:
@@ -11,7 +11,7 @@ async with WareraClient(api_key="YOUR_KEY") as client:
 
 ## Features
 
-- **Full API coverage** — all 35 endpoints across 20 namespaces
+- **Full API coverage** — all 38 endpoints across 23 namespaces
 - **Typed** — Pydantic v2 models for every request and response
 - **Async-first** — built on `httpx.AsyncClient`; sync shim included
 - **Cursor pagination** — transparent `paginate()` generator and `collect_all()` helper
@@ -170,7 +170,18 @@ await client.battle_ranking.get(
 
 Enums: `BattleRankingDataType.DAMAGE / POINTS / MONEY`,  
 `BattleRankingEntityType.USER / COUNTRY / MU`,  
-`BattleRankingSide.ATTACKER / DEFENDER`
+`BattleRankingSide.ATTACKER / DEFENDER / MERGED`
+
+### `client.battle_order`
+
+```python
+await client.battle_order.get_by_battle(
+    battle_id: str,
+    side: BattleOrderSide,
+) -> list[BattleOrder]
+```
+
+Enums: `BattleOrderSide.ATTACKER / DEFENDER`
 
 ### `client.round`
 
@@ -258,7 +269,7 @@ await client.transaction.paginate(**kwargs)    # async generator
 await client.transaction.collect_all(**kwargs) -> list[Transaction]
 ```
 
-`TransactionType`: `APPLICATION_FEE` `TRADING` `ITEM_MARKET` `WAGE` `DONATION` `ARTICLE_TIP` `OPEN_CASE` `CRAFT_ITEM` `DISMANTLE_ITEM`
+`TransactionType`: `APPLICATION_FEE` `TRADING` `ITEM_MARKET` `WAGE` `DONATION` `ARTICLE_TIP` `OPEN_CASE` `CRAFT_ITEM` `DISMANTLE_ITEM` `BATTLE_LOOT`
 
 ### `client.upgrade`
 
@@ -296,6 +307,25 @@ await client.search.query(search_text: str) -> SearchResults
 await client.game_config.get_dates() -> GameDates
 await client.game_config.get() -> GameConfig
 ```
+
+### `client.inventory`
+
+```python
+await client.inventory.get_equipment(user_id: str) -> list[Equipment]
+```
+
+### `client.action_log`
+
+```python
+await client.action_log.get_many(*, limit=20, cursor=None,
+    user_id=None, mu_id=None, country_id=None,
+    action_type: ActionLogActionType | None = None
+) -> CursorPage[ActionLog]
+await client.action_log.paginate(**kwargs)    # async generator
+await client.action_log.get_all(**kwargs) -> list[ActionLog]
+```
+
+Enum: `ActionLogActionType` — 17 values including `SET_ORDER`, `CHANGED_USERNAME`, `INCREASE_RESISTANCE`, etc.
 
 ---
 
@@ -438,8 +468,8 @@ warera/
 ├── _http.py             # httpx session, GET/POST encoding, retry
 ├── _pagination.py       # paginate(), collect_all()
 ├── _batch.py            # BatchSession, BatchItem, fetch_many_by_ids
-├── models/              # Pydantic response models (20 files)
-└── resources/           # Resource classes (19 files)
+├── models/              # Pydantic response models (23 files)
+└── resources/           # Resource classes (22 files)
 ```
 
 ---

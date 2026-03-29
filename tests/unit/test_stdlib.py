@@ -103,8 +103,10 @@ sys.modules["tenacity"] = tenacity_stub
 # ruff: noqa
 from warera._batch import DEFAULT_BATCH_SIZE, BatchSession, fetch_many_by_ids
 from warera._enums import (
+    ActionLogActionType,
     ArticleType,
     BattleFilter,
+    BattleOrderSide,
     BattleRankingDataType,
     BattleRankingSide,
     EventType,
@@ -155,6 +157,7 @@ class TestEnums(unittest.TestCase):
         values = {e.value for e in TransactionType}
         self.assertIn("applicationFee", values)
         self.assertIn("dismantleItem", values)
+        self.assertIn("battleLoot", values)
 
     def test_upgrade_type_values(self):
         values = {e.value for e in UpgradeType}
@@ -176,7 +179,13 @@ class TestEnums(unittest.TestCase):
         self.assertEqual({e.value for e in BattleRankingDataType}, {"damage", "points", "money"})
 
     def test_battle_ranking_side(self):
-        self.assertEqual({e.value for e in BattleRankingSide}, {"attacker", "defender"})
+        self.assertEqual({e.value for e in BattleRankingSide}, {"attacker", "defender", "merged"})
+
+    def test_battle_order_side(self):
+        self.assertEqual({e.value for e in BattleOrderSide}, {"attacker", "defender"})
+
+    def test_action_log_action_type_has_17_values(self):
+        self.assertEqual(len(ActionLogActionType), 17)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -742,6 +751,7 @@ class TestClientAssembly(unittest.TestCase):
             "region",
             "battle",
             "battle_ranking",
+            "battle_order",
             "round",
             "event",
             "item_trading",
@@ -754,6 +764,8 @@ class TestClientAssembly(unittest.TestCase):
             "article",
             "search",
             "game_config",
+            "inventory",
+            "action_log",
         ]
         for attr in expected:
             self.assertTrue(hasattr(client, attr), f"Missing resource: {attr}")

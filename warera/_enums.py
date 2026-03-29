@@ -1,5 +1,5 @@
 """
-All StrEnum classes derived directly from the WarEra API schema v0.17.4-beta.
+All StrEnum classes derived directly from the WarEra API schema v0.24.1-beta.
 Import from here to get tab-completion and typo safety on enum values.
 """
 
@@ -64,6 +64,7 @@ class BattleRankingEntityType(StrEnum):  # type: ignore[misc]
 class BattleRankingSide(StrEnum):  # type: ignore[misc]
     ATTACKER = "attacker"
     DEFENDER = "defender"
+    MERGED = "merged"
 
 
 # ---------------------------------------------------------------------------
@@ -149,6 +150,7 @@ class TransactionType(StrEnum):  # type: ignore[misc]
     OPEN_CASE = "openCase"
     CRAFT_ITEM = "craftItem"
     DISMANTLE_ITEM = "dismantleItem"
+    BATTLE_LOOT = "battleLoot"
 
 
 # ---------------------------------------------------------------------------
@@ -165,3 +167,38 @@ class UpgradeType(StrEnum):  # type: ignore[misc]
     BREAK_ROOM = "breakRoom"
     HEADQUARTERS = "headquarters"
     DORMITORIES = "dormitories"
+
+
+# ---------------------------------------------------------------------------
+# Battle Order
+# ---------------------------------------------------------------------------
+
+
+class BattleOrderSide(StrEnum):  # type: ignore[misc]
+    ATTACKER = "attacker"
+    DEFENDER = "defender"
+
+
+# ---------------------------------------------------------------------------
+# Action Log
+# ---------------------------------------------------------------------------
+
+
+class ActionLogActionType(StrEnum):  # type: ignore[misc]
+    SET_ORDER = "setOrder"
+    UNSET_ORDER = "unsetOrder"
+    UPDATE_ORDER = "updateOrder"
+    SET_MERCENARY_CONTRACTS = "setMercenaryContracts"
+    REMOVE_MERCENARY_CONTRACT = "removeMercenaryContract"
+    CREATE_MERCENARY_CONTRACT_PROPOSAL = "createMercenaryContractProposal"
+    CANCEL_MERCENARY_CONTRACT_PROPOSAL = "cancelMercenaryContractProposal"
+    ACCEPT_MERCENARY_CONTRACT = "acceptMercenaryContract"
+    CANCEL_MERCENARY_CONTRACT = "cancelMercenaryContract"
+    COMPLETE_MERCENARY_CONTRACT = "completeMercenaryContract"
+    CHANGED_USERNAME = "changedUsername"
+    CHANGED_CITIZENSHIP = "changedCitizenship"
+    CHANGED_DESCRIPTION = "changedDescription"
+    INCREASE_RESISTANCE = "increaseResistance"
+    DECREASE_RESISTANCE = "decreaseResistance"
+    CLAIM_MISSION_XP = "claimMissionXp"
+    CLAIM_FINISHED_MISSION_XP = "claimFinishedMissionXp"

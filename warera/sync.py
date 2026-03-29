@@ -133,6 +133,7 @@ class WareraClient:
         self.region = _wrap_resource(self._async_client.region)
         self.battle = _wrap_resource(self._async_client.battle)
         self.battle_ranking = _wrap_resource(self._async_client.battle_ranking)
+        self.battle_order = _wrap_resource(self._async_client.battle_order)
         self.round = _wrap_resource(self._async_client.round)
         self.event = _wrap_resource(self._async_client.event)
         self.item_trading = _wrap_resource(self._async_client.item_trading)
@@ -145,6 +146,8 @@ class WareraClient:
         self.article = _wrap_resource(self._async_client.article)
         self.search = _wrap_resource(self._async_client.search)
         self.game_config = _wrap_resource(self._async_client.game_config)
+        self.inventory = _wrap_resource(self._async_client.inventory)
+        self.action_log = _wrap_resource(self._async_client.action_log)
 
     def batch(self, batch_size: int | None = None) -> _SyncBatchSession:
         return _SyncBatchSession(self._async_client.batch(batch_size))

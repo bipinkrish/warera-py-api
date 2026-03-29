@@ -1,5 +1,7 @@
+from .action_log import ActionLog
 from .article import Article, ArticleLite
 from .battle import Battle, BattleLive
+from .battle_order import BattleOrder
 from .battle_ranking import BattleRankingEntry
 from .common import CursorPage, WareraModel
 from .company import Company
@@ -7,6 +9,7 @@ from .country import Country
 from .event import Event
 from .game_config import GameConfig, GameDates
 from .government import Government, GovernmentMember
+from .inventory import Equipment
 from .item_trading import ItemOffer, ItemPrice, TradingOrder
 from .military_unit import MilitaryUnit
 from .ranking import RankingEntry
@@ -20,14 +23,17 @@ from .work_offer import WorkOffer
 from .worker import Worker, WorkerCount
 
 __all__ = [
+    "ActionLog",
     "Article",
     "ArticleLite",
     "Battle",
     "BattleLive",
+    "BattleOrder",
     "BattleRankingEntry",
     "Company",
     "Country",
     "CursorPage",
+    "Equipment",
     "Event",
     "GameConfig",
     "GameDates",
