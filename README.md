@@ -4,7 +4,7 @@ A robust Python client for the [WarEra](https://warera.io) tRPC API — schema v
 
 ```python
 async with WareraClient(api_key="YOUR_KEY") as client:
-    user   = await client.user.get_lite("12345")
+    user   = await client.user.get_by_id("12345")
     prices = await client.item_trading.get_prices()
     gov    = await client.government.get("7")
 ```
@@ -41,7 +41,7 @@ async def main():
     async with WareraClient(api_key="YOUR_KEY") as client:
 
         # Simple lookups
-        user    = await client.user.get_lite("12345")
+        user    = await client.user.get_by_id("12345")
         country = await client.country.find_by_name("Ukraine")
         gov     = await client.government.get(country.id)
         prices  = await client.item_trading.get_prices()
@@ -68,7 +68,7 @@ from warera.sync import WareraClient
 
 client = WareraClient(api_key="YOUR_KEY")
 
-user    = client.user.get_lite("12345")
+user    = client.user.get_by_id("12345")
 prices  = client.item_trading.get_prices()
 battles = client.battle.get_active()   # collects all pages automatically
 ```
@@ -94,7 +94,8 @@ client = WareraClient()
 ### `client.user`
 
 ```python
-await client.user.get_lite(user_id: str) -> User
+await client.user.get_by_id(user_id: str) -> User
+await client.user.get_lite(user_id: str) -> User    # Deprecated
 await client.user.get_by_country(country_id, *, limit=10, cursor=None) -> CursorPage[User]
 await client.user.paginate_by_country(country_id, **kwargs)           # async generator
 await client.user.collect_by_country(country_id, **kwargs) -> list[User]
@@ -426,7 +427,7 @@ from warera.exceptions import (
 )
 
 try:
-    user = await client.user.get_lite("99999")
+    user = await client.user.get_by_id("99999")
 except WareraNotFoundError:
     print("User not found")
 except WareraRateLimitError as e:

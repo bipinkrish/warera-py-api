@@ -80,7 +80,7 @@ async def test_get_injects_api_key_header():
     respx.get(url__startswith=BASE).mock(return_value=httpx.Response(200, json=_make_trpc_ok({})))
 
     async with HttpSession(api_key="secret-key", base_url=BASE) as session:
-        await session.get("user.getUserLite", {"userId": "1"})
+        await session.get("user.getUserById", {"userId": "1"})
 
     request = respx.calls[0].request
     assert request.headers["X-API-Key"] == "secret-key"
@@ -92,7 +92,7 @@ async def test_get_no_api_key_header_when_not_set():
     respx.get(url__startswith=BASE).mock(return_value=httpx.Response(200, json=_make_trpc_ok({})))
 
     async with HttpSession(base_url=BASE) as session:  # no key
-        await session.get("user.getUserLite", {"userId": "1"})
+        await session.get("user.getUserById", {"userId": "1"})
 
     request = respx.calls[0].request
     assert "X-API-Key" not in request.headers
@@ -106,7 +106,7 @@ async def test_get_raises_unauthorized_on_401():
     )
     async with HttpSession(base_url=BASE) as session:
         with pytest.raises(WareraUnauthorizedError):
-            await session.get("user.getUserLite", {"userId": "1"})
+            await session.get("user.getUserById", {"userId": "1"})
 
 
 @respx.mock
@@ -168,7 +168,7 @@ async def test_batch_post_body_uses_string_integer_keys():
 
     async with HttpSession(base_url=BASE) as session:
         await session.post_batch(
-            ["government.getByCountryId", "user.getUserLite"],
+            ["government.getByCountryId", "user.getUserById"],
             [{"countryId": "7"}, {"userId": "42"}],
         )
 

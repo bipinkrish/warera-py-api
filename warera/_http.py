@@ -83,7 +83,7 @@ class HttpSession:
             self._client = httpx.AsyncClient(
                 base_url=self._base_url,
                 timeout=self._timeout,
-                headers={"User-Agent": "warera-client/0.1.0"},
+                headers={"User-Agent": "warera-client"},
                 follow_redirects=True,
             )
 

@@ -8,7 +8,7 @@ Usage:
     from warera.sync import WareraClient
 
     client = WareraClient(api_key="...")
-    user    = client.user.get_lite("12345")
+    user    = client.user.get_by_id("12345")
     prices  = client.item_trading.get_prices()
 
     # Batch

@@ -3,12 +3,12 @@ WareraClient — the single entry point for the WarEra API client library.
 
 Async usage (recommended):
     async with WareraClient(api_key="...") as client:
-        user = await client.user.get_lite("12345")
+        user = await client.user.get_by_id("12345")
 
 Sync usage (convenience shim):
     from warera.sync import WareraClient
     client = WareraClient(api_key="...")
-    user = client.user.get_lite("12345")
+    user = client.user.get_by_id("12345")
 
 No API key (anonymous, lower rate limits):
     async with WareraClient() as client:   # reads WARERA_API_KEY env var if set

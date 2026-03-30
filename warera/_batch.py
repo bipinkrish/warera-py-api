@@ -89,7 +89,7 @@ class BatchSession:
 
         async with client.batch() as batch:
             item1 = batch.add("company.getById", {"companyId": "123"})
-            item2 = batch.add("user.getUserLite", {"userId": "456"})
+            item2 = batch.add("user.getUserById", {"userId": "456"})
 
         # After the block: item1.result, item2.result are populated.
 

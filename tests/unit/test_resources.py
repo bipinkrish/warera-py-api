@@ -165,6 +165,18 @@ async def test_item_trading_get_price_missing_returns_none():
 
 
 @pytest.mark.asyncio
+async def test_user_get_by_id_parses_model():
+    raw = {"id": "42", "username": "testplayer", "level": 10, "wealth": 999.5}
+    resource = UserResource(_mock_http(raw))
+    user = await resource.get_by_id("42")
+
+    assert user.id == "42"
+    assert user.username == "testplayer"
+    assert user.level == 10
+    assert user.wealth == 999.5
+
+
+@pytest.mark.asyncio
 async def test_user_get_lite_parses_model():
     raw = {"id": "42", "username": "testplayer", "level": 10, "wealth": 999.5}
     resource = UserResource(_mock_http(raw))

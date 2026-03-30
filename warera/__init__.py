@@ -7,7 +7,7 @@ Quick start:
 
     async def main():
         async with WareraClient(api_key="YOUR_KEY") as client:
-            user = await client.user.get_lite("12345")
+            user = await client.user.get_by_id("12345")
             print(user.username)
 
     asyncio.run(main())
@@ -15,7 +15,7 @@ Quick start:
 Sync:
     from warera.sync import WareraClient
     client = WareraClient(api_key="YOUR_KEY")
-    user = client.user.get_lite("12345")
+    user = client.user.get_by_id("12345")
 """
 
 from ._enums import (
@@ -77,7 +77,7 @@ from .models import (
     WorkOffer,
 )
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 __all__ = [
     # Client

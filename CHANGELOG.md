@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] — 2026-03-30
+
+### Added
+- **`UserResource.get_by_id`** (`user.getUserById`) — replacing `getUserLite` which is returned with more data.
+
+### Deprecated
+- **`UserResource.get_lite`** (`user.getUserLite`) is deprecated in favor of `get_by_id` but kept for backwards compatibility.
+
 ## [0.1.5] — 2026-03-30
 
 Adapts the SDK to WarEra API **v0.24.1-beta**.
