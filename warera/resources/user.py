@@ -6,7 +6,7 @@ from typing import Any
 from .._batch import fetch_many_by_ids
 from .._pagination import collect_all, paginate
 from ..models.common import CursorPage
-from ..models.user import User
+from ..models.user import User, UserLite
 from ._base import BaseResource
 
 
@@ -23,10 +23,10 @@ class UserResource(BaseResource):
         raw = await self._get("user.getUserById", userId=user_id)
         return User.model_validate(raw)
 
-    async def get_lite(self, user_id: str) -> User:
+    async def get_lite(self, user_id: str) -> UserLite:
         """Get a user's lite profile by ID. (Deprecated in favor of get_by_id)"""
         raw = await self._get("user.getUserLite", userId=user_id)
-        return User.model_validate(raw)
+        return UserLite.model_validate(raw)
 
     async def get_by_country(
         self,
@@ -34,7 +34,7 @@ class UserResource(BaseResource):
         *,
         limit: int = 10,
         cursor: str | None = None,
-    ) -> CursorPage[User]:
+    ) -> CursorPage[UserLite]:
         """Get users belonging to a country (cursor-paginated)."""
         raw = await self._get(
             "user.getUsersByCountry",
@@ -42,18 +42,18 @@ class UserResource(BaseResource):
             limit=limit,
             cursor=cursor,
         )
-        return CursorPage.from_raw(raw, User)
+        return CursorPage.from_raw(raw, UserLite)
 
     # ------------------------------------------------------------------
     # Pagination helpers
     # ------------------------------------------------------------------
 
-    async def paginate_by_country(self, country_id: str, **kwargs: Any) -> AsyncIterator[User]:
+    async def paginate_by_country(self, country_id: str, **kwargs: Any) -> AsyncIterator[UserLite]:
         """Async generator — yields every user in a country across all pages."""
         async for item in paginate(self.get_by_country, country_id=country_id, **kwargs):
             yield item
 
-    async def collect_by_country(self, country_id: str, **kwargs: Any) -> list[User]:
+    async def collect_by_country(self, country_id: str, **kwargs: Any) -> list[UserLite]:
         """Return all users in a country as a flat list."""
         return await collect_all(self.get_by_country, country_id=country_id, **kwargs)
 

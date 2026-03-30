@@ -18,7 +18,7 @@ from .round_ import Hit, Round
 from .search import SearchResult, SearchResults
 from .transaction import Transaction
 from .upgrade import Upgrade
-from .user import User
+from .user import User, UserLite
 from .work_offer import WorkOffer
 from .worker import Worker, WorkerCount
 
@@ -52,6 +52,7 @@ __all__ = [
     "Transaction",
     "Upgrade",
     "User",
+    "UserLite",
     "WareraModel",
     "WorkOffer",
     "Worker",

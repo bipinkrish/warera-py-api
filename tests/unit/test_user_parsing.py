@@ -62,3 +62,10 @@ def test_user_parsing_from_sample():
     assert user.rankings.user_damages.tier == "bronze"
     assert user.mu == "mock_mu_id"
     assert user.avatar_url == "https://example.com/avatar.jpg"
+    
+    # Also ensure UserLite parses correctly and ignores extra fields
+    from warera.models.user import UserLite
+    user_lite = UserLite.model_validate(data)
+    assert user_lite.id == "mock_user_id"
+    assert user_lite.leveling.level == 10
+    assert user_lite.stats.damages_count == 100
