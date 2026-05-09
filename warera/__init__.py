@@ -1,5 +1,5 @@
 """
-warera-client — Python client for the WarEra tRPC API (v0.24.1-beta)
+warera-client — Python client for the WarEra tRPC API
 
 Quick start:
     import asyncio
@@ -55,6 +55,10 @@ from .models import (
     Company,
     Country,
     CursorPage,
+    Donation,
+    DonationTotals,
+    Election,
+    ElectionCandidate,
     Equipment,
     Event,
     GameConfig,
@@ -64,6 +68,9 @@ from .models import (
     ItemOffer,
     ItemPrice,
     MilitaryUnit,
+    MuMember,
+    Party,
+    PartyEthics,
     RankingEntry,
     Region,
     Round,
@@ -73,12 +80,13 @@ from .models import (
     Upgrade,
     User,
     UserLite,
+    WorkOffer,
+    WorkStats,
     Worker,
     WorkerCount,
-    WorkOffer,
 )
 
-__version__ = "0.1.7"
+__version__ = "0.2.0"
 
 __all__ = [
     # Client
@@ -117,6 +125,10 @@ __all__ = [
     "Company",
     "Country",
     "CursorPage",
+    "Donation",
+    "DonationTotals",
+    "Election",
+    "ElectionCandidate",
     "Equipment",
     "Event",
     "GameConfig",
@@ -126,6 +138,9 @@ __all__ = [
     "ItemOffer",
     "ItemPrice",
     "MilitaryUnit",
+    "MuMember",
+    "Party",
+    "PartyEthics",
     "RankingEntry",
     "Region",
     "Round",
@@ -136,6 +151,7 @@ __all__ = [
     "User",
     "UserLite",
     "WorkOffer",
+    "WorkStats",
     "Worker",
     "WorkerCount",
 ]

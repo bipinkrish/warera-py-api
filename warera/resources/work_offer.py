@@ -9,12 +9,51 @@ from ..models.work_offer import WorkOffer
 from ._base import BaseResource
 
 
+class WageRange:
+    """Min/max/average wage range."""
+
+    __slots__ = ("min", "max", "average")
+
+    def __init__(self, raw: dict[str, Any]) -> None:
+        self.min: float = float(raw.get("min", 0))
+        self.max: float = float(raw.get("max", 0))
+        self.average: float = float(raw.get("average", 0))
+
+    def __repr__(self) -> str:
+        return f"WageRange(min={self.min}, max={self.max}, avg={self.average})"
+
+
+class WageStats:
+    """
+    Result of ``workOffer.getWageStats``.
+
+    Attributes:
+        allowed_range:        Min/max/average wages allowed for the given worker profile.
+        top_offer:            Highest absolute offer on the market.
+        top_eligible_offer:   Best offer this worker qualifies for.
+        top_eligible_offers:  List of top raw offer dicts this worker qualifies for.
+    """
+
+    def __init__(self, raw: dict[str, Any]) -> None:
+        self.allowed_range = WageRange(raw.get("allowedRange", {}))
+        self.top_offer: float = float(raw.get("topOffer", 0))
+        self.top_eligible_offer: float = float(raw.get("topEligibleOffer", 0))
+        self.top_eligible_offers: list[dict[str, Any]] = raw.get("topEligibleOffers", [])
+
+    def __repr__(self) -> str:
+        return (
+            f"WageStats(top_offer={self.top_offer}, top_eligible={self.top_eligible_offer}, "
+            f"allowed_range={self.allowed_range})"
+        )
+
+
 class WorkOfferResource(BaseResource):
     """
     Endpoints:
       • workOffer.getById
       • workOffer.getWorkOfferByCompanyId
-      • workOffer.getWorkOffersPaginated  (cursor-paginated)
+      • workOffer.getWorkOffersPaginated   (cursor-paginated)
+      • workOffer.getWageStats
     """
 
     async def get(self, work_offer_id: str) -> WorkOffer:
@@ -64,6 +103,35 @@ class WorkOfferResource(BaseResource):
             citizenship=citizenship,
         )
         return CursorPage.from_raw(raw, WorkOffer)
+
+    async def get_wage_stats(
+        self,
+        *,
+        energy: float,
+        production: float,
+        citizenship: str,
+    ) -> WageStats:
+        """
+        Get wage statistics for a given worker profile — the range of allowed wages,
+        the top market offer, and the best offers this worker is eligible for.
+
+        Args:
+            energy:      The worker's energy stat.
+            production:  The worker's production stat.
+            citizenship: The worker's citizenship country ID or code.
+
+        Returns:
+            A :class:`WageStats` object.
+        """
+        raw = await self._get(
+            "workOffer.getWageStats",
+            energy=energy,
+            production=production,
+            citizenship=citizenship,
+        )
+        if isinstance(raw, dict):
+            return WageStats(raw)
+        return WageStats({})
 
     async def paginate(self, **kwargs: Any) -> AsyncIterator[WorkOffer]:
         """Async generator over work offers matching the given filters."""

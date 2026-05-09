@@ -157,3 +157,118 @@ async def test_fetch_many_by_ids_empty():
     results = await fetch_many_by_ids(http, "company.getById", "companyId", [])
     assert results == []
     http.post_batch.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Hard batch limit enforcement
+# ---------------------------------------------------------------------------
+
+
+def test_max_batch_size_constant_is_50():
+    """The hard-cap constant must match the server's limit."""
+    from warera._batch import MAX_BATCH_SIZE
+    assert MAX_BATCH_SIZE == 50
+
+
+def test_batch_session_clamps_to_max():
+    """BatchSession silently clamps any batch_size > 50 to 50."""
+    from warera._batch import BatchSession, MAX_BATCH_SIZE
+    from unittest.mock import MagicMock
+
+    # Even if the caller passes a huge number, the session caps it.
+    session = BatchSession(http=MagicMock(), batch_size=999)
+    assert session._batch_size == MAX_BATCH_SIZE
+
+
+def test_batch_session_default_is_50():
+    """Default batch_size should be the server hard limit."""
+    from warera._batch import BatchSession, MAX_BATCH_SIZE
+    from unittest.mock import MagicMock
+
+    session = BatchSession(http=MagicMock())
+    assert session._batch_size == MAX_BATCH_SIZE
+
+
+@pytest.mark.asyncio
+async def test_batch_session_splits_large_queue():
+    """
+    Queuing more than 50 items must produce multiple flush chunks,
+    each no larger than MAX_BATCH_SIZE.
+    """
+    from warera._batch import BatchSession, MAX_BATCH_SIZE
+
+    chunk_sizes: list[int] = []
+
+    async def mock_post_batch(procedures, inputs):
+        chunk_sizes.append(len(procedures))
+        return [{"result": {"data": i}} for i in range(len(procedures))]
+
+    http = MagicMock()
+    http.post_batch = mock_post_batch
+
+    session = BatchSession(http=http, batch_size=MAX_BATCH_SIZE)
+    for i in range(120):
+        session.add("test.proc", {"id": str(i)})
+
+    await session.flush()
+
+    # Every chunk must respect the hard limit.
+    assert all(s <= MAX_BATCH_SIZE for s in chunk_sizes), f"Oversized chunk: {chunk_sizes}"
+    # 120 items → at least 3 chunks of ≤ 50
+    assert len(chunk_sizes) >= 3
+    assert sum(chunk_sizes) == 120
+
+
+@pytest.mark.asyncio
+async def test_http_post_batch_auto_splits_over_50():
+    """post_batch() must auto-split > 50 procedures into chunks of ≤ 50."""
+    import respx
+    import httpx
+    from warera._http import HttpSession
+
+    BASE = "https://api2.warera.io/trpc"
+
+    call_sizes: list[int] = []
+
+    with respx.mock:
+        def handler(request):
+            # Count how many procedures are in this request's path.
+            path = request.url.path
+            procs = path.lstrip("/").split(",")
+            call_sizes.append(len(procs))
+            body = [{"result": {"data": i}} for i in range(len(procs))]
+            return httpx.Response(200, json=body)
+
+        respx.post(url__startswith=BASE).mock(side_effect=handler)
+
+        async with HttpSession(base_url=BASE) as session:
+            results = await session.post_batch(
+                ["test.proc"] * 120,
+                [{}] * 120,
+            )
+
+    assert len(results) == 120
+    assert all(s <= 50 for s in call_sizes), f"Oversized chunk: {call_sizes}"
+    assert len(call_sizes) == 3  # 50 + 50 + 20
+
+
+@pytest.mark.asyncio
+async def test_http_post_batch_accepts_exactly_50():
+    """post_batch() must not raise for exactly 50 procedures."""
+    import respx
+    import httpx
+    from warera._http import HttpSession
+
+    BASE = "https://api2.warera.io/trpc"
+    ok_response = [{"result": {"data": i}} for i in range(50)]
+
+    with respx.mock:
+        respx.post(url__startswith=BASE).mock(
+            return_value=httpx.Response(200, json=ok_response)
+        )
+        async with HttpSession(base_url=BASE) as session:
+            results = await session.post_batch(
+                ["test.proc"] * 50,
+                [{}] * 50,
+            )
+    assert len(results) == 50

@@ -6,16 +6,27 @@ Two call modes:
   • Batch   → POST /trpc/<proc0>,<proc1>,...?batch=1   body: {"0": input0, ...}
 
 Auth is optional: X-API-Key header is injected only when a key is present.
+
+Rate-limit handling: the API returns standard rate-limit headers on every response:
+  ratelimit-limit:     total requests allowed in the current window
+  ratelimit-remaining: requests remaining in the current window
+  ratelimit-reset:     seconds until the window resets
+
+Rather than using a hardcoded delay, this session reads these headers after every
+response and automatically waits when remaining reaches 0, for exactly as long as
+the server says it will take for the window to reset.  This means the client
+self-adapts to any future changes the server makes to its rate-limit policy.
+
 Retry logic covers 429 (rate limit) and 5xx errors with exponential backoff.
-The retry parameters (max_retries, retry_backoff_factor) passed to HttpSession
-are respected at runtime — they are not hard-wired in a static decorator.
 """
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import json
 import os
+import time
 from typing import Any
 from urllib.parse import quote
 
@@ -43,10 +54,74 @@ def _is_retryable(exc: BaseException) -> bool:
     return isinstance(exc, (WareraRateLimitError, WareraServerError, httpx.TransportError))
 
 
+class _RateLimitState:
+    """
+    Tracks the server-reported rate-limit window and enforces waits when
+    the remaining quota hits zero.
+
+    The API returns three headers per response:
+      ratelimit-limit     – max requests per window (e.g. 500)
+      ratelimit-remaining – requests left in the current window (e.g. 490)
+      ratelimit-reset     – seconds until the window resets (e.g. 43)
+
+    After each response we record ``remaining`` and compute the absolute
+    monotonic timestamp at which the window will reset.  Before the next
+    outgoing request we check whether we still have quota; if not, we
+    sleep until the reset timestamp.
+    """
+
+    def __init__(self) -> None:
+        self.limit: int | None = None
+        self.remaining: int | None = None
+        # Absolute monotonic time (seconds) when the window resets.
+        self._reset_at: float | None = None
+        self._lock: asyncio.Lock | None = None
+
+    # asyncio.Lock must be created inside a running event-loop, so we
+    # initialise it lazily instead of in __init__.
+    def _get_lock(self) -> asyncio.Lock:
+        if self._lock is None:
+            self._lock = asyncio.Lock()
+        return self._lock
+
+    def update(self, headers: httpx.Headers) -> None:
+        """Parse and store the rate-limit values from a response's headers."""
+        raw_limit = headers.get("ratelimit-limit")
+        raw_remaining = headers.get("ratelimit-remaining")
+        raw_reset = headers.get("ratelimit-reset")
+
+        if raw_limit is not None:
+            with contextlib.suppress(ValueError):
+                self.limit = int(raw_limit)
+
+        if raw_remaining is not None:
+            with contextlib.suppress(ValueError):
+                self.remaining = int(raw_remaining)
+
+        if raw_reset is not None:
+            with contextlib.suppress(ValueError):
+                self._reset_at = time.monotonic() + float(raw_reset)
+
+    async def wait_if_exhausted(self) -> None:
+        """
+        If the current window is exhausted (remaining == 0) sleep until
+        the window resets, then reset our internal state so subsequent
+        requests proceed normally.
+        """
+        async with self._get_lock():
+            if self.remaining is not None and self.remaining <= 0 and self._reset_at is not None:
+                wait_secs = self._reset_at - time.monotonic()
+                if wait_secs > 0:
+                    await asyncio.sleep(wait_secs)
+                # Reset state — next response will give us fresh values.
+                self.remaining = None
+                self._reset_at = None
+
+
 class HttpSession:
     """
-    Manages an httpx.AsyncClient with auth injection, encoding helpers,
-    and retry logic.
+    Manages an httpx.AsyncClient with auth injection, header-based rate-limit
+    throttling, and retry logic.
 
     Not intended for direct use — accessed through WareraClient.
     """
@@ -66,6 +141,7 @@ class HttpSession:
         self._max_retries = max_retries
         self._retry_backoff = retry_backoff_factor
         self._client: httpx.AsyncClient | None = None
+        self._rate_limit = _RateLimitState()
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -141,11 +217,15 @@ class HttpSession:
         result: httpx.Response | None = None
         async for attempt in self._retrying():
             with attempt:
+                # Respect the server-reported rate-limit window before sending.
+                await self._rate_limit.wait_if_exhausted()
                 if self._client is None:
                     raise RuntimeError(
                         "HTTP client is not initialised — call __aenter__ first"
                     )
                 resp = await self._client.get(url, headers=self._auth_headers())
+                # Update rate-limit state from response headers.
+                self._rate_limit.update(resp.headers)
                 self._check_response(resp)
                 result = resp
         return result  # type: ignore[return-value]
@@ -158,24 +238,61 @@ class HttpSession:
         self,
         procedures: list[str],
         inputs: list[dict[str, Any]],
+        *,
+        chunk_size: int = 50,
     ) -> list[Any]:
         """
-        Execute a tRPC batch POST.
-        Returns a list of parsed `result.data` values in the same order
-        as `procedures`. Raises WareraBatchError if any item fails.
+        Execute one or more tRPC batch POSTs, automatically splitting oversized
+        lists into chunks of at most ``chunk_size`` (hard-capped at 50, the
+        server's enforced limit).
+
+        Returns a list of parsed ``result.data`` values in the same order as
+        ``procedures``.  Raises :exc:`WareraBatchError` if any item fails.
+
+        Args:
+            procedures: Procedure names to call, e.g. ``["company.getById", ...]``.
+            inputs:     Corresponding input dicts, one per procedure.
+            chunk_size: Max procedures per physical HTTP request.  Values above
+                        the server hard limit of 50 are clamped silently.
         """
         await self._ensure_client()
 
         if not procedures:
             return []
 
-        proc_path = ",".join(procedures)
-        url = f"/{proc_path}?batch=1"
-        # tRPC batch body: keys are string-integers
-        body = {str(i): inp for i, inp in enumerate(inputs)}
+        # Clamp to the server hard limit regardless of what was passed.
+        _MAX_BATCH = 50
+        effective = min(max(1, chunk_size), _MAX_BATCH)
 
-        raw_list = await self._post_batch_with_retry(url, body)
-        return self._unwrap_batch(raw_list, procedures)
+        # Fast path: fits in one request.
+        if len(procedures) <= effective:
+            proc_path = ",".join(procedures)
+            url = f"/{proc_path}?batch=1"
+            body = {str(i): inp for i, inp in enumerate(inputs)}
+            raw_list = await self._post_batch_with_retry(url, body)
+            return self._unwrap_batch(raw_list, procedures)
+
+        # Slow path: split into chunks and collect results in order.
+        # Chunks are fired concurrently — the header-based rate-limit tracker
+        # will sleep automatically if the window is exhausted mid-flight.
+        import asyncio as _asyncio
+
+        chunks: list[tuple[list[str], list[dict[str, Any]]]] = []
+        for start in range(0, len(procedures), effective):
+            end = start + effective
+            chunks.append((procedures[start:end], inputs[start:end]))
+
+        async def _run_chunk(
+            procs: list[str], inps: list[dict[str, Any]]
+        ) -> list[Any]:
+            proc_path = ",".join(procs)
+            url = f"/{proc_path}?batch=1"
+            body = {str(i): inp for i, inp in enumerate(inps)}
+            raw = await self._post_batch_with_retry(url, body)
+            return self._unwrap_batch(raw, procs)
+
+        chunk_results = await _asyncio.gather(*[_run_chunk(p, i) for p, i in chunks])
+        return [item for sublist in chunk_results for item in sublist]
 
     async def _post_batch_with_retry(
         self, url: str, body: dict[str, Any]
@@ -183,12 +300,16 @@ class HttpSession:
         result: list[dict[str, Any]] | None = None
         async for attempt in self._retrying():
             with attempt:
+                # Respect the server-reported rate-limit window before sending.
+                await self._rate_limit.wait_if_exhausted()
                 if self._client is None:
                     raise RuntimeError(
                         "HTTP client is not initialised — call __aenter__ first"
                     )
                 headers = {**self._auth_headers(), "Content-Type": "application/json"}
                 resp = await self._client.post(url, json=body, headers=headers)
+                # Update rate-limit state from response headers.
+                self._rate_limit.update(resp.headers)
                 self._check_response(resp)
                 data = resp.json()
                 if not isinstance(data, list):

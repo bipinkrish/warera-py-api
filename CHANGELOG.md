@@ -1,33 +1,67 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## [0.2.0] — 2026-05-09
 
-## [0.1.6] — 2026-03-30
+### New endpoints (from TRPC wrapper)
 
-### Added
-- **`UserResource.get_by_id`** (`user.getUserById`) — replacing `getUserLite` which is returned with more data.
+**Party**
+- `client.party.get(party_id)` — `party.getById`
+- `client.party.get_paginated(country_id, ...)` — `party.getManyPaginated`
+- `client.party.collect_all(...)` / `client.party.paginate(...)` — full autopagination helpers
+- `client.party.get_by_country(country_id)` — convenience shortcut
 
-### Deprecated
-- **`UserResource.get_lite`** (`user.getUserLite`) is deprecated in favor of `get_by_id` but kept for backwards compatibility.
+**Donation**
+- `client.donation.get_paginated(mu_id, country_id, party_id, ...)` — `donation.getManyPaginated`
+- `client.donation.get_totals(mu_id, country_id, party_id)` — `donation.getTotalDonations`
+- `client.donation.collect_all(...)` / `client.donation.paginate(...)` — full autopagination helpers
 
-## [0.1.5] — 2026-03-30
+**Election**
+- `client.election.get_paginated(country_id, ...)` — `election.getElections`
+- `client.election.collect_all(...)` / `client.election.paginate(...)` — full autopagination helpers
+- `client.election.get_by_country(country_id)` — convenience shortcut
 
-Adapts the SDK to WarEra API **v0.24.1-beta**.
+**GameStat**
+- `client.game_stat.get_equipment_avg(item_code)` — `gameStat.getEquipmentAvgByCode`
 
-### Added
-- **`BattleRankingSide.MERGED`** — new `"merged"` enum value for the merged battle rankings that combine attacker + defender into a single list.
-- **`TransactionType.BATTLE_LOOT`** — new `"battleLoot"` transaction type for the revamped battle loot system.
-- **`BattleOrderSide`** enum — `attacker` / `defender` for the new battle-order endpoint.
-- **`ActionLogActionType`** enum — all 17 action types (orders, mercenary contracts, citizenship changes, resistance, missions, etc.).
-- **`BattleOrderResource`** (`client.battle_order`) — wraps `battleOrder.getByBattle`.
-- **`InventoryResource`** (`client.inventory`) — wraps `inventory.fetchCurrentEquipment`.
-- **`ActionLogResource`** (`client.action_log`) — wraps `actionLog.getPaginated` with cursor-pagination helpers.
-- **`BattleOrder`**, **`Equipment`**, **`ActionLog`** models.
-- Sync shim support for all three new resources.
+**MuMember**
+- `client.mu_member.get_by_mu(mu_id)` — `muMember.getByMu`
 
-### Changed
-- API version references updated from `v0.17.4-beta` to `v0.24.1-beta`.
+**Work** (new namespace)
+- `client.work.get_stats_by_user(user_id, days, timezone)` — `work.getStatsByUserId`
+- `client.work.get_stats_by_company(company_id, days, timezone)` — `work.getStatsByCompany`
+- `client.work.get_stats_by_worker_and_company(worker_id, company_id, days, timezone)` — `work.getStatsByWorkerAndCompany`
 
-## [0.1.4]
+**Company** (extended)
+- `client.company.get_recommended_regions(item_code, include_deposit)` — `company.getRecommendedRegionIdsByItemCode`
+- `client.company.get_production_bonus(company_id)` — `company.getProductionBonus`
 
-Initial tracked release.
+**WorkOffer** (extended)
+- `client.work_offer.get_wage_stats(energy, production, citizenship)` — `workOffer.getWageStats`
+
+**ItemTrading** (extended)
+- `client.item_trading.get_public_orders_by_owner(country_id)` — `tradingOrder.getPublicOrdersByOwner`
+
+### New models
+- `Party`, `PartyEthics`
+- `Donation`, `DonationTotals`
+- `Election`, `ElectionCandidate`
+- `WorkStats`
+- `MuMember`
+
+### Rate-limit header support (screenshot feature)
+Instead of a hardcoded delay, the HTTP session now reads the server's own
+rate-limit response headers (`ratelimit-limit`, `ratelimit-remaining`,
+`ratelimit-reset`) after every request and automatically sleeps for exactly
+as long as the server reports before the next request when the quota reaches
+zero. This means the client self-adapts to any future changes the server
+makes to its rate-limit policy — no code changes needed.
+
+Two read-only properties are exposed on `WareraClient` for introspection:
+- `client.rate_limit_remaining` — requests left in the current window
+- `client.rate_limit_total` — total requests per window
+
+### Tests
+- New test file `tests/unit/test_new_resources.py` covering all new resources
+- New rate-limit header tests in `tests/unit/test_http.py`
+
+## [0.1.7] — previous release
