@@ -1,6 +1,7 @@
 # warera-client
 
 A robust Python client for the [WarEra](https://warera.io) tRPC API.
+(Up-to-date with WarEra v0.24.5-beta)
 
 ```python
 async with WareraClient(api_key="YOUR_KEY") as client:
