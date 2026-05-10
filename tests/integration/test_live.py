@@ -14,7 +14,6 @@ import pytest
 import pytest_asyncio
 
 from warera import WareraClient
-
 from warera._enums import RankingType
 from warera.models import Country
 
