@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 import httpx
+import pytest
 import respx
 
 from warera._batch import MAX_BATCH_SIZE, BatchSession, fetch_many_by_ids

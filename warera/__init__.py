@@ -80,10 +80,10 @@ from .models import (
     Upgrade,
     User,
     UserLite,
-    WorkOffer,
-    WorkStats,
     Worker,
     WorkerCount,
+    WorkOffer,
+    WorkStats,
 )
 
 __version__ = "0.2.0"

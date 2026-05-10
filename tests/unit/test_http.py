@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import json
-from urllib.parse import parse_qs, unquote, urlparse
-
 import asyncio
+import json
 import time
+from urllib.parse import parse_qs, unquote, urlparse
 
 import httpx
 import pytest

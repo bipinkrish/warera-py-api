@@ -36,7 +36,7 @@ class CompanyProductionBonus:
         self.total = total
 
     @classmethod
-    def from_raw(cls, raw: dict[str, Any]) -> "CompanyProductionBonus":
+    def from_raw(cls, raw: dict[str, Any]) -> CompanyProductionBonus:
         return cls(
             strategic_bonus=float(raw.get("strategicBonus", 0)),
             deposit_bonus=float(raw.get("depositBonus", 0)),
