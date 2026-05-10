@@ -31,6 +31,13 @@ from typing import Any, cast
 from ._batch import BatchSession
 from .client import WareraClient as _AsyncClient
 
+try:
+    import nest_asyncio as _nest_asyncio
+    _HAS_NEST_ASYNCIO = True
+except ImportError:  # nest_asyncio is optional (only needed inside Jupyter)
+    _nest_asyncio = None  # type: ignore[assignment]
+    _HAS_NEST_ASYNCIO = False
+
 
 def _run(coro: Any) -> Any:
     """
@@ -44,9 +51,8 @@ def _run(coro: Any) -> Any:
     try:
         loop = asyncio.get_running_loop()
         # Already inside a running event loop (e.g. Jupyter) — use nest_asyncio.
-        import nest_asyncio
-
-        nest_asyncio.apply()
+        if _HAS_NEST_ASYNCIO and _nest_asyncio is not None:
+            _nest_asyncio.apply()
         return loop.run_until_complete(coro)
     except RuntimeError:
         # No running loop — safe to call asyncio.run().

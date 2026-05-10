@@ -77,7 +77,7 @@ warn_return_any = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# mark tests that use anyio
+asyncio_mode = "auto"
 markers = [
-    "anyio: mark tests to run with anyio",
+    "asyncio: mark tests to run with asyncio (auto-applied in auto mode)",
 ]

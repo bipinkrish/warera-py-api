@@ -6,7 +6,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from warera._batch import BatchSession, fetch_many_by_ids
+import httpx
+import respx
+
+from warera._batch import MAX_BATCH_SIZE, BatchSession, fetch_many_by_ids
+from warera._http import HttpSession
 from warera.exceptions import WareraBatchError, WareraNotFoundError
 
 # ---------------------------------------------------------------------------
@@ -166,14 +170,11 @@ async def test_fetch_many_by_ids_empty():
 
 def test_max_batch_size_constant_is_50():
     """The hard-cap constant must match the server's limit."""
-    from warera._batch import MAX_BATCH_SIZE
     assert MAX_BATCH_SIZE == 50
 
 
 def test_batch_session_clamps_to_max():
     """BatchSession silently clamps any batch_size > 50 to 50."""
-    from warera._batch import BatchSession, MAX_BATCH_SIZE
-    from unittest.mock import MagicMock
 
     # Even if the caller passes a huge number, the session caps it.
     session = BatchSession(http=MagicMock(), batch_size=999)
@@ -182,8 +183,6 @@ def test_batch_session_clamps_to_max():
 
 def test_batch_session_default_is_50():
     """Default batch_size should be the server hard limit."""
-    from warera._batch import BatchSession, MAX_BATCH_SIZE
-    from unittest.mock import MagicMock
 
     session = BatchSession(http=MagicMock())
     assert session._batch_size == MAX_BATCH_SIZE
@@ -195,7 +194,6 @@ async def test_batch_session_splits_large_queue():
     Queuing more than 50 items must produce multiple flush chunks,
     each no larger than MAX_BATCH_SIZE.
     """
-    from warera._batch import BatchSession, MAX_BATCH_SIZE
 
     chunk_sizes: list[int] = []
 
@@ -222,9 +220,6 @@ async def test_batch_session_splits_large_queue():
 @pytest.mark.asyncio
 async def test_http_post_batch_auto_splits_over_50():
     """post_batch() must auto-split > 50 procedures into chunks of ≤ 50."""
-    import respx
-    import httpx
-    from warera._http import HttpSession
 
     BASE = "https://api2.warera.io/trpc"
 
@@ -255,9 +250,6 @@ async def test_http_post_batch_auto_splits_over_50():
 @pytest.mark.asyncio
 async def test_http_post_batch_accepts_exactly_50():
     """post_batch() must not raise for exactly 50 procedures."""
-    import respx
-    import httpx
-    from warera._http import HttpSession
 
     BASE = "https://api2.warera.io/trpc"
     ok_response = [{"result": {"data": i}} for i in range(50)]

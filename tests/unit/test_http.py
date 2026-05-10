@@ -5,11 +5,14 @@ from __future__ import annotations
 import json
 from urllib.parse import parse_qs, unquote, urlparse
 
+import asyncio
+import time
+
 import httpx
 import pytest
 import respx
 
-from warera._http import HttpSession
+from warera._http import HttpSession, _RateLimitState
 from warera.exceptions import (
     WareraBatchError,
     WareraNotFoundError,
@@ -248,9 +251,6 @@ async def test_batch_empty_returns_empty_list():
 
 def test_rate_limit_state_update_from_headers():
     """RateLimitState.update() should parse numeric header values."""
-    from warera._http import _RateLimitState
-    import httpx
-
     state = _RateLimitState()
     headers = httpx.Headers({
         "ratelimit-limit": "500",
@@ -267,9 +267,6 @@ def test_rate_limit_state_update_from_headers():
 
 def test_rate_limit_state_ignores_bad_values():
     """RateLimitState.update() should silently ignore non-numeric headers."""
-    from warera._http import _RateLimitState
-    import httpx
-
     state = _RateLimitState()
     headers = httpx.Headers({
         "ratelimit-limit": "banana",
@@ -285,10 +282,6 @@ def test_rate_limit_state_ignores_bad_values():
 
 def test_rate_limit_state_no_wait_when_remaining_positive():
     """wait_if_exhausted() should return immediately when quota is available."""
-    from warera._http import _RateLimitState
-    import time
-    import httpx
-
     state = _RateLimitState()
     headers = httpx.Headers({
         "ratelimit-limit": "500",
@@ -309,10 +302,6 @@ def test_rate_limit_state_no_wait_when_remaining_positive():
 
 def test_rate_limit_state_waits_when_exhausted():
     """wait_if_exhausted() should sleep until the reset window when remaining == 0."""
-    from warera._http import _RateLimitState
-    import time
-    import httpx
-
     state = _RateLimitState()
     # Simulate a window that expires in 0.1s
     headers = httpx.Headers({
@@ -337,9 +326,6 @@ def test_rate_limit_state_waits_when_exhausted():
 
 def test_rate_limit_state_clears_after_wait():
     """After waiting, remaining and reset_at should be cleared so next request proceeds."""
-    from warera._http import _RateLimitState
-    import time
-
     state = _RateLimitState()
     state.remaining = 0
     state._reset_at = time.monotonic() + 0.05  # tiny wait

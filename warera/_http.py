@@ -39,8 +39,12 @@ from tenacity import (
 )
 
 from .exceptions import (
+    WareraBatchError,
+    WareraError,
+    WareraHTTPError,
     WareraRateLimitError,
     WareraServerError,
+    WareraValidationError,
     _raise_for_status,
 )
 
@@ -275,8 +279,6 @@ class HttpSession:
         # Slow path: split into chunks and collect results in order.
         # Chunks are fired concurrently — the header-based rate-limit tracker
         # will sleep automatically if the window is exhausted mid-flight.
-        import asyncio as _asyncio
-
         chunks: list[tuple[list[str], list[dict[str, Any]]]] = []
         for start in range(0, len(procedures), effective):
             end = start + effective
@@ -291,7 +293,7 @@ class HttpSession:
             raw = await self._post_batch_with_retry(url, body)
             return self._unwrap_batch(raw, procs)
 
-        chunk_results = await _asyncio.gather(*[_run_chunk(p, i) for p, i in chunks])
+        chunk_results = await asyncio.gather(*[_run_chunk(p, i) for p, i in chunks])
         return [item for sublist in chunk_results for item in sublist]
 
     async def _post_batch_with_retry(
@@ -387,8 +389,6 @@ class HttpSession:
         Returns a list of unwrapped data values.
         Raises WareraBatchError if any item errored.
         """
-        from .exceptions import WareraBatchError, WareraError, WareraHTTPError
-
         results: dict[int, Any] = {}
         errors: dict[int, WareraError] = {}
 
@@ -404,8 +404,6 @@ class HttpSession:
                 try:
                     results[i] = item["result"]["data"]
                 except (KeyError, TypeError):
-                    from .exceptions import WareraValidationError
-
                     errors[i] = WareraValidationError(
                         f"Bad shape at batch index {i} ({proc}): {item}", item
                     )
