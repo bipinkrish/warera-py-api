@@ -79,12 +79,25 @@ class _RateLimitState:
         self.remaining: int | None = None
         # Absolute monotonic time (seconds) when the window resets.
         self._reset_at: float | None = None
+        # Initialised eagerly by HttpSession._ensure_client() once an event
+        # loop is running, so there is never a window where two coroutines
+        # race to create the first Lock object.
         self._lock: asyncio.Lock | None = None
 
-    # asyncio.Lock must be created inside a running event-loop, so we
-    # initialise it lazily instead of in __init__.
-    def _get_lock(self) -> asyncio.Lock:
+    def ensure_lock(self) -> None:
+        """Create the asyncio.Lock if it does not yet exist.
+
+        Must be called from inside a running event loop (i.e. from an async
+        context).  HttpSession._ensure_client() calls this, so the lock is
+        always ready before any request is dispatched.
+        """
         if self._lock is None:
+            self._lock = asyncio.Lock()
+
+    def _get_lock(self) -> asyncio.Lock:
+        # Should never be None when called from request paths because
+        # _ensure_client() calls ensure_lock() first, but guard anyway.
+        if self._lock is None:  # pragma: no cover
             self._lock = asyncio.Lock()
         return self._lock
 
@@ -111,8 +124,24 @@ class _RateLimitState:
         If the current window is exhausted (remaining == 0) sleep until
         the window resets, then reset our internal state so subsequent
         requests proceed normally.
+
+        Uses a double-checked pattern: the condition is tested before
+        acquiring the lock (fast path — no contention when quota is
+        healthy) and again after acquiring it (slow path — ensures that
+        only the *first* coroutine in a concurrent group actually sleeps;
+        coroutines that queued behind the lock re-check and find
+        ``remaining`` already reset to ``None``, so they skip the sleep
+        and proceed immediately).
         """
+        # Fast path: quota is healthy or not yet known — skip lock entirely.
+        if self.remaining is None or self.remaining > 0:
+            return
+
         async with self._get_lock():
+            # Re-check after acquiring the lock.  The coroutine that got
+            # here first will sleep and then null out remaining/reset_at.
+            # Every subsequent waiter will find remaining == None and exit
+            # without sleeping again.
             if self.remaining is not None and self.remaining <= 0 and self._reset_at is not None:
                 wait_secs = self._reset_at - time.monotonic()
                 if wait_secs > 0:
@@ -166,6 +195,9 @@ class HttpSession:
                 headers={"User-Agent": "warera-client"},
                 follow_redirects=True,
             )
+        # Ensure the rate-limit lock is created inside the running event loop.
+        # This is safe to call repeatedly — it is a no-op after the first call.
+        self._rate_limit.ensure_lock()
 
     async def aclose(self) -> None:
         if self._client and not self._client.is_closed:
