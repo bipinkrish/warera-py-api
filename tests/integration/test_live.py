@@ -10,14 +10,11 @@ An API key is optional but gives higher rate limits:
 
 from __future__ import annotations
 
-import pytest
 import pytest_asyncio
 
 from warera import WareraClient
-
 from warera._enums import RankingType
 from warera.models import Country
-
 
 
 @pytest_asyncio.fixture(scope="module")
