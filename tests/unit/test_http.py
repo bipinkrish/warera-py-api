@@ -90,7 +90,10 @@ async def test_get_injects_api_key_header():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_no_api_key_header_when_not_set():
+async def test_get_no_api_key_header_when_not_set(monkeypatch: pytest.MonkeyPatch):
+    # Ensure WARERA_API_KEY from the environment (e.g. a CI secret) does not
+    # leak into a session that was explicitly created without an API key.
+    monkeypatch.delenv("WARERA_API_KEY", raising=False)
     respx.get(url__startswith=BASE).mock(return_value=httpx.Response(200, json=_make_trpc_ok({})))
 
     async with HttpSession(base_url=BASE) as session:  # no key
