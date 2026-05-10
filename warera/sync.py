@@ -35,7 +35,7 @@ try:
     import nest_asyncio as _nest_asyncio
     _HAS_NEST_ASYNCIO = True
 except ImportError:  # nest_asyncio is optional (only needed inside Jupyter)
-    _nest_asyncio = None  # type: ignore[assignment]
+    _nest_asyncio = None
     _HAS_NEST_ASYNCIO = False
 
 
