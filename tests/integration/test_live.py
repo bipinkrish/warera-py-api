@@ -14,8 +14,11 @@ import pytest
 import pytest_asyncio
 
 from warera import WareraClient
+
 from warera._enums import RankingType
 from warera.models import Country
+
+pytestmark = pytest.mark.asyncio(loop_scope="module")
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -29,7 +32,6 @@ async def client():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_get_all_countries(client):
     countries = await client.country.get_all()
     assert isinstance(countries, dict)
@@ -38,7 +40,6 @@ async def test_get_all_countries(client):
     assert isinstance(first, Country)
 
 
-@pytest.mark.asyncio
 async def test_find_country_by_name(client):
     countries = await client.country.get_all()
     # find any country and verify round-trip by name
@@ -54,13 +55,11 @@ async def test_find_country_by_name(client):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_get_game_dates(client):
     dates = await client.game_config.get_dates()
     assert dates is not None
 
 
-@pytest.mark.asyncio
 async def test_get_game_config(client):
     config = await client.game_config.get()
     assert config is not None
@@ -71,7 +70,6 @@ async def test_get_game_config(client):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_get_item_prices(client):
     prices = await client.item_trading.get_prices()
     assert isinstance(prices, dict)
@@ -82,7 +80,6 @@ async def test_get_item_prices(client):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_get_all_regions(client):
     regions = await client.region.get_all()
     assert isinstance(regions, dict)
@@ -94,7 +91,6 @@ async def test_get_all_regions(client):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_get_battles_paginated(client):
     page = await client.battle.get_many(is_active=True, limit=5)
     assert isinstance(page.items, list)
@@ -105,7 +101,6 @@ async def test_get_battles_paginated(client):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_get_user_wealth_ranking(client):
     entries = await client.ranking.get(RankingType.USER_WEALTH)
     assert isinstance(entries, list)
@@ -116,7 +111,6 @@ async def test_get_user_wealth_ranking(client):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_search_returns_results(client):
     results = await client.search.query("a")
     assert results is not None
@@ -128,7 +122,6 @@ async def test_search_returns_results(client):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_batch_gets_all_countries_and_prices(client):
     """Verify that a batch request with mixed procedures resolves correctly."""
     async with client.batch() as batch:
@@ -139,7 +132,6 @@ async def test_batch_gets_all_countries_and_prices(client):
     assert config_item.ok
 
 
-@pytest.mark.asyncio
 async def test_get_many_countries_batch(client):
     """Verify get_all + batch ID fetch round-trip."""
     all_countries = await client.country.get_all()
