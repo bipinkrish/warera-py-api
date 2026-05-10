@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] — 2026-05-09
+## [0.1.8] — 2026-05-10
 
 ### New endpoints (from TRPC wrapper)
 
