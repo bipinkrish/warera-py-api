@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import time
 from urllib.parse import parse_qs, unquote, urlparse
 
 import httpx
 import pytest
 import respx
 
-from warera._http import HttpSession
+from warera._http import HttpSession, _RateLimitState
 from warera.exceptions import (
     WareraBatchError,
     WareraNotFoundError,
@@ -88,7 +90,10 @@ async def test_get_injects_api_key_header():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_no_api_key_header_when_not_set():
+async def test_get_no_api_key_header_when_not_set(monkeypatch: pytest.MonkeyPatch):
+    # Ensure WARERA_API_KEY from the environment (e.g. a CI secret) does not
+    # leak into a session that was explicitly created without an API key.
+    monkeypatch.delenv("WARERA_API_KEY", raising=False)
     respx.get(url__startswith=BASE).mock(return_value=httpx.Response(200, json=_make_trpc_ok({})))
 
     async with HttpSession(base_url=BASE) as session:  # no key
@@ -239,3 +244,120 @@ async def test_batch_empty_returns_empty_list():
     async with HttpSession(base_url=BASE) as session:
         results = await session.post_batch([], [])
     assert results == []
+
+
+# ---------------------------------------------------------------------------
+# Rate-limit header tracking
+# ---------------------------------------------------------------------------
+
+
+def test_rate_limit_state_update_from_headers():
+    """RateLimitState.update() should parse numeric header values."""
+    state = _RateLimitState()
+    headers = httpx.Headers({
+        "ratelimit-limit": "500",
+        "ratelimit-remaining": "490",
+        "ratelimit-reset": "43",
+    })
+    state.update(headers)
+
+    assert state.limit == 500
+    assert state.remaining == 490
+    # reset_at should be set (a monotonic timestamp roughly 43s from now)
+    assert state._reset_at is not None
+
+
+def test_rate_limit_state_ignores_bad_values():
+    """RateLimitState.update() should silently ignore non-numeric headers."""
+    state = _RateLimitState()
+    headers = httpx.Headers({
+        "ratelimit-limit": "banana",
+        "ratelimit-remaining": "",
+        "ratelimit-reset": "not-a-number",
+    })
+    state.update(headers)
+
+    assert state.limit is None
+    assert state.remaining is None
+    assert state._reset_at is None
+
+
+def test_rate_limit_state_no_wait_when_remaining_positive():
+    """wait_if_exhausted() should return immediately when quota is available."""
+    state = _RateLimitState()
+    headers = httpx.Headers({
+        "ratelimit-limit": "500",
+        "ratelimit-remaining": "490",
+        "ratelimit-reset": "43",
+    })
+    state.update(headers)
+
+    start = time.monotonic()
+
+    async def run():
+        await state.wait_if_exhausted()
+
+    asyncio.run(run())
+    elapsed = time.monotonic() - start
+    assert elapsed < 0.1, "Should not have waited when quota is available"
+
+
+def test_rate_limit_state_waits_when_exhausted():
+    """wait_if_exhausted() should sleep until the reset window when remaining == 0."""
+    state = _RateLimitState()
+    # Simulate a window that expires in 0.1s
+    headers = httpx.Headers({
+        "ratelimit-limit": "500",
+        "ratelimit-remaining": "0",
+        "ratelimit-reset": "0",  # already expired — but _reset_at will be set to now+0
+    })
+    state.update(headers)
+    # Force reset_at to be ~0.15s from now so we can observe the sleep
+    state._reset_at = time.monotonic() + 0.15
+    state.remaining = 0
+
+    start = time.monotonic()
+
+    async def run():
+        await state.wait_if_exhausted()
+
+    asyncio.run(run())
+    elapsed = time.monotonic() - start
+    assert elapsed >= 0.1, "Should have waited for the reset window"
+
+
+def test_rate_limit_state_clears_after_wait():
+    """After waiting, remaining and reset_at should be cleared so next request proceeds."""
+    state = _RateLimitState()
+    state.remaining = 0
+    state._reset_at = time.monotonic() + 0.05  # tiny wait
+
+    async def run():
+        await state.wait_if_exhausted()
+
+    asyncio.run(run())
+    assert state.remaining is None
+    assert state._reset_at is None
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_http_session_updates_rate_limit_from_response():
+    """HttpSession should parse ratelimit headers from successful responses."""
+    respx.get(url__startswith=BASE).mock(
+        return_value=httpx.Response(
+            200,
+            json=_make_trpc_ok({"id": "1"}),
+            headers={
+                "ratelimit-limit": "500",
+                "ratelimit-remaining": "400",
+                "ratelimit-reset": "30",
+            },
+        )
+    )
+
+    async with HttpSession(base_url=BASE) as session:
+        await session.get("test.endpoint", {"id": "1"})
+
+    assert session._rate_limit.limit == 500
+    assert session._rate_limit.remaining == 400

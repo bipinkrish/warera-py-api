@@ -35,8 +35,10 @@ from .exceptions import WareraBatchError, WareraError
 
 T = TypeVar("T")
 
-# Max procedures per batch POST (keep URLs sane and avoid server limits)
-DEFAULT_BATCH_SIZE = 50
+# Hard server-side limit: the API rejects any batch with more than 50 procedures.
+# This matches the TRPC wrapper's MAX_MAX_BATCH_SIZE constant.
+MAX_BATCH_SIZE = 50
+DEFAULT_BATCH_SIZE = MAX_BATCH_SIZE
 
 
 @dataclass
@@ -100,7 +102,8 @@ class BatchSession:
     def __init__(self, http: Any, batch_size: int = DEFAULT_BATCH_SIZE) -> None:
         # `http` is an HttpSession instance — typed as Any to avoid circular import
         self._http = http
-        self._batch_size = batch_size
+        # Clamp to the API hard limit — requests with >50 procedures are rejected.
+        self._batch_size = min(batch_size, MAX_BATCH_SIZE)
         self._queue: list[BatchItem[Any]] = []
 
     def __str__(self) -> str:
@@ -189,7 +192,7 @@ async def fetch_many_by_ids(
         procedure:  e.g. "company.getById"
         id_param:   The input key name, e.g. "companyId"
         ids:        List of ID strings to fetch
-        batch_size: Max IDs per batch POST (default 50)
+        batch_size: Max IDs per batch POST (default 50, hard-capped at 50)
 
     Returns:
         List of raw API responses in the same order as `ids`. Entries for
@@ -199,7 +202,9 @@ async def fetch_many_by_ids(
     if not ids:
         return []
 
-    chunks = [ids[i : i + batch_size] for i in range(0, len(ids), batch_size)]
+    # Enforce the server hard limit regardless of what the caller passed.
+    effective_size = min(batch_size, MAX_BATCH_SIZE)
+    chunks = [ids[i : i + effective_size] for i in range(0, len(ids), effective_size)]
 
     async def fetch_chunk(chunk: list[str]) -> list[Any]:
         procedures = [procedure] * len(chunk)

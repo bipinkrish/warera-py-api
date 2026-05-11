@@ -1,6 +1,6 @@
 import json
 
-from warera.models.user import User
+from warera.models.user import User, UserLite
 
 
 def test_user_parsing_from_sample():
@@ -64,7 +64,6 @@ def test_user_parsing_from_sample():
     assert user.avatar_url == "https://example.com/avatar.jpg"
     
     # Also ensure UserLite parses correctly and ignores extra fields
-    from warera.models.user import UserLite
     user_lite = UserLite.model_validate(data)
     assert user_lite.id == "mock_user_id"
     assert user_lite.leveling.level == 10

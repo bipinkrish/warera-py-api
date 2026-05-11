@@ -264,7 +264,7 @@ class TestHttpEncoding(unittest.TestCase):
     """Test URL/body building without making real requests."""
 
     def _make_session(self):
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         return HttpSession(base_url="https://api2.warera.io/trpc")
 
@@ -279,16 +279,16 @@ class TestHttpEncoding(unittest.TestCase):
         self.assertIn("limit", cleaned)
 
     def test_auth_header_present_when_key_set(self):
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         session = HttpSession(api_key="my-secret", base_url="https://test")
         headers = session._auth_headers()
         self.assertEqual(headers["X-API-Key"], "my-secret")
 
     def test_auth_header_absent_when_no_key(self):
-        import os
+        import os  # noqa: PLC0415
 
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         # Ensure env var isn't set during this test
         old = os.environ.pop("WARERA_API_KEY", None)
@@ -301,9 +301,9 @@ class TestHttpEncoding(unittest.TestCase):
                 os.environ["WARERA_API_KEY"] = old
 
     def test_api_key_read_from_env(self):
-        import os
+        import os  # noqa: PLC0415
 
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         os.environ["WARERA_API_KEY"] = "env-key"
         try:
@@ -313,21 +313,21 @@ class TestHttpEncoding(unittest.TestCase):
             del os.environ["WARERA_API_KEY"]
 
     def test_unwrap_single_ok(self):
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         resp = _FakeResponse(200, {"result": {"data": {"id": "1", "name": "TestCo"}}})
         result = HttpSession._unwrap_single(resp, "company.getById")
         self.assertEqual(result, {"id": "1", "name": "TestCo"})
 
     def test_unwrap_single_trpc_error_raises(self):
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         resp = _FakeResponse(200, {"error": {"message": "Not found", "data": {"httpStatus": 404}}})
         with self.assertRaises(WareraNotFoundError):
             HttpSession._unwrap_single(resp, "company.getById")
 
     def test_unwrap_batch_all_ok(self):
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         raw = [
             {"result": {"data": {"id": "1"}}},
@@ -337,7 +337,7 @@ class TestHttpEncoding(unittest.TestCase):
         self.assertEqual(results, [{"id": "1"}, {"id": "2"}])
 
     def test_unwrap_batch_partial_failure_raises_batch_error(self):
-        from warera._http import HttpSession
+        from warera._http import HttpSession  # noqa: PLC0415
 
         raw = [
             {"result": {"data": {"id": "1"}}},
@@ -554,7 +554,7 @@ class _FakePage:
 
 class TestPagination(unittest.TestCase):
     def _make_paginate(self):
-        from warera._pagination import collect_all, paginate
+        from warera._pagination import collect_all, paginate  # noqa: PLC0415
 
         return paginate, collect_all
 
@@ -632,7 +632,7 @@ class TestCountryResourceLogic(unittest.TestCase):
     """Test parsing logic in CountryResource without real HTTP."""
 
     def _resource(self, return_value):
-        from warera.resources.country import CountryResource
+        from warera.resources.country import CountryResource  # noqa: PLC0415
 
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value)
@@ -666,7 +666,7 @@ class TestCountryResourceLogic(unittest.TestCase):
 
 class TestWorkerResourceLogic(unittest.TestCase):
     def _resource(self, return_value):
-        from warera.resources.worker import WorkerResource
+        from warera.resources.worker import WorkerResource  # noqa: PLC0415
 
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value)
@@ -688,20 +688,20 @@ class TestWorkerResourceLogic(unittest.TestCase):
 
 class TestUpgradeResourceValidation(unittest.TestCase):
     def _resource(self, return_value=None):
-        from warera.resources.upgrade import UpgradeResource
+        from warera.resources.upgrade import UpgradeResource  # noqa: PLC0415
 
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value or {})
         return UpgradeResource(http)
 
     def test_raises_when_no_entity_id(self):
-        from warera._enums import UpgradeType
+        from warera._enums import UpgradeType  # noqa: PLC0415
 
         with self.assertRaises(WareraError):
             run(self._resource().get(UpgradeType.BUNKER))
 
     def test_does_not_raise_with_region_id(self):
-        from warera._enums import UpgradeType
+        from warera._enums import UpgradeType  # noqa: PLC0415
 
         # Should not raise — region_id is provided
         run(self._resource({"id": "u1"}).get(UpgradeType.BUNKER, region_id="42"))
@@ -709,7 +709,7 @@ class TestUpgradeResourceValidation(unittest.TestCase):
 
 class TestSearchResourceValidation(unittest.TestCase):
     def _resource(self, return_value=None):
-        from warera.resources.search import SearchResource
+        from warera.resources.search import SearchResource  # noqa: PLC0415
 
         http = mock.MagicMock()
         http.get = mock.AsyncMock(return_value=return_value or {"results": []})
@@ -731,7 +731,7 @@ class TestSearchResourceValidation(unittest.TestCase):
 
 class TestClientAssembly(unittest.TestCase):
     def test_all_resources_present(self):
-        from warera.client import WareraClient
+        from warera.client import WareraClient  # noqa: PLC0415
 
         client = WareraClient.__new__(WareraClient)  # don't init httpx
         # Manually wire up a fake http
@@ -771,8 +771,8 @@ class TestClientAssembly(unittest.TestCase):
             self.assertTrue(hasattr(client, attr), f"Missing resource: {attr}")
 
     def test_batch_returns_batch_session(self):
-        from warera._batch import BatchSession
-        from warera.client import WareraClient
+        from warera._batch import BatchSession  # noqa: PLC0415
+        from warera.client import WareraClient  # noqa: PLC0415
 
         fake_http = mock.MagicMock()
         fake_http._api_key = None
@@ -790,7 +790,7 @@ class TestClientAssembly(unittest.TestCase):
         fake_http._base_url = "https://api2.warera.io/trpc"
 
         with mock.patch("warera.client.HttpSession", return_value=fake_http):
-            from warera.client import WareraClient
+            from warera.client import WareraClient  # noqa: PLC0415
 
             client = WareraClient(api_key="key123")
 
@@ -803,7 +803,7 @@ class TestClientAssembly(unittest.TestCase):
         fake_http._base_url = "https://api2.warera.io/trpc"
 
         with mock.patch("warera.client.HttpSession", return_value=fake_http):
-            from warera.client import WareraClient
+            from warera.client import WareraClient  # noqa: PLC0415
 
             client = WareraClient()
 
@@ -818,7 +818,7 @@ class TestClientAssembly(unittest.TestCase):
 
 class TestSyncProxy(unittest.TestCase):
     def test_sync_proxy_wraps_coroutine(self):
-        from warera.sync import _SyncResourceProxy
+        from warera.sync import _SyncResourceProxy  # noqa: PLC0415
 
         class FakeResource:
             async def get(self, id: str):
@@ -829,7 +829,7 @@ class TestSyncProxy(unittest.TestCase):
         self.assertEqual(result, {"id": "42"})
 
     def test_sync_proxy_wraps_async_generator_to_list(self):
-        from warera.sync import _SyncResourceProxy
+        from warera.sync import _SyncResourceProxy  # noqa: PLC0415
 
         class FakeResource:
             async def paginate(self):
@@ -842,7 +842,7 @@ class TestSyncProxy(unittest.TestCase):
         self.assertEqual(result, [0, 1, 2])
 
     def test_sync_proxy_passes_through_non_async_attr(self):
-        from warera.sync import _SyncResourceProxy
+        from warera.sync import _SyncResourceProxy  # noqa: PLC0415
 
         class FakeResource:
             label = "hello"
