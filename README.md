@@ -1,4 +1,4 @@
-# ⚔️ Warera Python Client
+# Warera Python Client
 
 [![PyPI version](https://badge.fury.io/py/warera-client.svg)](https://pypi.org/project/warera-client/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -13,19 +13,19 @@ async with WareraClient(api_key="YOUR_KEY") as client:
     gov    = await client.government.get("7")
 ```
 
-## ✨ Features
+## Features
 
-- 🌐 **Full API coverage** — all endpoints across 32 resource namespaces.
-- 🛡️ **Fully Typed** — Pydantic v2 models for *every* request and response.
-- ⚡ **Async-first** — built on `httpx.AsyncClient`; sync shim included.
-- 🔄 **Cursor pagination** — transparent `paginate()` generator and `collect_all()` helper.
-- 📦 **Batch requests** — `BatchSession` for multiple procedures in one HTTP round-trip; auto-chunked `get_many` for ID lists.
-- 🧠 **Smart batch splitting** — any batch larger than the server's hard limit of 50 is automatically split and fired concurrently; no manual chunking needed.
-- ⏱️ **Adaptive rate limiting** — reads `ratelimit-remaining` / `ratelimit-reset` response headers and sleeps exactly as long as the server says.
-- 🔄 **Resilient** — automatic retry with exponential backoff on 429 and 5xx errors.
-- 🔑 **Optional auth** — `X-API-Key` gives higher rate limits; works anonymously too.
+- **Full API coverage** — all endpoints across 32 resource namespaces.
+- **Fully Typed** — Pydantic v2 models for *every* request and response.
+- **Async-first** — built on `httpx.AsyncClient`; sync shim included.
+- **Cursor pagination** — transparent `paginate()` generator and `collect_all()` helper.
+- **Batch requests** — `BatchSession` for multiple procedures in one HTTP round-trip; auto-chunked `get_many` for ID lists.
+- **Smart batch splitting** — any batch larger than the server's hard limit of 50 is automatically split and fired concurrently; no manual chunking needed.
+- **Adaptive rate limiting** — reads `ratelimit-remaining` / `ratelimit-reset` response headers and sleeps exactly as long as the server says.
+- **Resilient** — automatic retry with exponential backoff on 429 and 5xx errors.
+- **Optional auth** — `X-API-Key` gives higher rate limits; works anonymously too.
 
-## 🚀 Installation
+## Installation
 
 ```bash
 pip install warera-client
@@ -35,7 +35,7 @@ Requires Python 3.10+.
 
 ---
 
-## 🏃 Quick Start
+## Quick Start
 
 ### Async (recommended)
 
@@ -76,7 +76,7 @@ battles = client.battle.get_active()   # collects all pages automatically
 
 ---
 
-## 🔐 Authentication
+## Authentication
 
 ```python
 # Option 1 - pass key directly
@@ -92,7 +92,7 @@ client = WareraClient()
 
 ---
 
-## ⏱️ Rate Limiting
+## Rate Limiting
 
 > [!NOTE]
 > The client dynamically reads the rate-limit headers the API attaches to **every** response (`ratelimit-limit`, `ratelimit-remaining`, `ratelimit-reset`).
@@ -111,11 +111,11 @@ async with WareraClient(api_key="YOUR_KEY") as client:
 
 ---
 
-## 📚 All Resource Methods
+## All Resource Methods
 
 Each section follows this layout: **method signatures** → **enums** (if any) → **model fields** (if any) → **example** (if any).
 
-### 👤 `client.user`
+### `client.user`
 
 ```python
 await client.user.get_by_id(user_id: str) -> User
@@ -125,7 +125,7 @@ await client.user.collect_by_country(country_id, **kwargs) -> list[User]
 await client.user.get_many(user_ids: list[str], batch_size=50) -> list[User]
 ```
 
-### 🏢 `client.company`
+### `client.company`
 
 ```python
 await client.company.get(company_id: str) -> Company
@@ -154,7 +154,7 @@ bonus = await client.company.get_production_bonus("my_company_id")
 print(f"Total production bonus: {bonus.total:.0%}")
 ```
 
-### 🌎 `client.country`
+### `client.country`
 
 ```python
 await client.country.get(country_id: str) -> Country
@@ -163,13 +163,13 @@ await client.country.find_by_name(name: str) -> Country | None   # case-insensit
 client.country.invalidate_cache()                                 # synchronous, clears the cache
 ```
 
-### 🏛️ `client.government`
+### `client.government`
 
 ```python
 await client.government.get(country_id: str) -> Government
 ```
 
-### 📜 `client.party`
+### `client.party`
 
 ```python
 await client.party.get(party_id: str) -> Party
@@ -193,7 +193,7 @@ for p in parties:
     print(p.name, p.ethics.militarism if p.ethics else "")
 ```
 
-### 💸 `client.donation`
+### `client.donation`
 
 ```python
 await client.donation.get_paginated(*, mu_id=None, country_id=None, party_id=None,
@@ -212,7 +212,7 @@ totals = await client.donation.get_totals(mu_id="my_mu_id")
 print(f"{totals.donor_count} donors, {totals.total_amount} total")
 ```
 
-### 🗳️ `client.election`
+### `client.election`
 
 ```python
 await client.election.get_paginated(*, country_id=None, limit=20, cursor=None, direction=None) -> CursorPage[Election]
@@ -236,7 +236,7 @@ for e in elections:
     print(f"{e.type}: winner={winner.user if winner else 'TBD'}, votes={e.votes_count}")
 ```
 
-### 📊 `client.game_stat`
+### `client.game_stat`
 
 ```python
 await client.game_stat.get_equipment_avg(item_code: str) -> float
@@ -249,7 +249,7 @@ avg = await client.game_stat.get_equipment_avg("sword")
 print(f"Average sword quality: {avg:.1f}")
 ```
 
-### 🪖 `client.mu_member`
+### `client.mu_member`
 
 ```python
 await client.mu_member.get_by_mu(mu_id: str) -> list[MuMember]
@@ -266,7 +266,7 @@ for m in top[:5]:
     print(f"User {m.user}: {m.weekly_damages_count} weekly dmg")
 ```
 
-### 👷 `client.work`
+### `client.work`
 
 ```python
 await client.work.get_stats_by_user(user_id, *, days=30, timezone="UTC") -> list[WorkStats]
@@ -286,7 +286,7 @@ for day in stats:
     print(f"{day.daily_date}: total={day.total:.0f}, wage={day.wage:.2f}")
 ```
 
-### 🗺️ `client.region`
+### `client.region`
 
 ```python
 await client.region.get(region_id: str) -> Region
@@ -294,7 +294,7 @@ await client.region.get_all() -> dict[str, Region]
 await client.region.get_many(region_ids: list[str], batch_size=50) -> list[Region]
 ```
 
-### ⚔️ `client.battle`
+### `client.battle`
 
 ```python
 await client.battle.get(battle_id: str) -> Battle
@@ -309,7 +309,7 @@ await client.battle.paginate(**kwargs)                             # async gener
 
 `BattleDirection` - `FORWARD` `BACKWARD`
 
-### 🏆 `client.battle_ranking`
+### `client.battle_ranking`
 
 ```python
 await client.battle_ranking.get(
@@ -326,7 +326,7 @@ await client.battle_ranking.get(
 
 `BattleRankingSide` - `ATTACKER` `DEFENDER` `MERGED`
 
-### 📜 `client.battle_order`
+### `client.battle_order`
 
 ```python
 await client.battle_order.get_by_battle(battle_id: str, side: BattleOrderSide) -> list[BattleOrder]
@@ -334,7 +334,7 @@ await client.battle_order.get_by_battle(battle_id: str, side: BattleOrderSide) -
 
 `BattleOrderSide` - `ATTACKER` `DEFENDER`
 
-### ⏱️ `client.round`
+### `client.round`
 
 ```python
 await client.round.get(round_id: str) -> Round
@@ -342,7 +342,7 @@ await client.round.get_last_hits(round_id: str) -> list[Hit]
 await client.round.get_many(round_ids: list[str], batch_size=50) -> list[Round]
 ```
 
-### 📰 `client.event`
+### `client.event`
 
 ```python
 await client.event.get_paginated(*, limit=10, cursor=None,
@@ -362,7 +362,7 @@ await client.event.collect_all(**kwargs) -> list[Event]
 | Resistance | `RESISTANCE_INCREASED` `RESISTANCE_DECREASED` |
 | Economy | `COUNTRY_MONEY_TRANSFER` `DEPOSIT_DISCOVERED` `DEPOSIT_DEPLETED` `BANKRUPTCY` |
 
-### ⚖️ `client.item_trading`
+### `client.item_trading`
 
 ```python
 await client.item_trading.get_prices() -> dict[str, ItemPrice]
@@ -382,7 +382,7 @@ print(f"{len(summary.buy_orders)} buy orders, {len(summary.sell_orders)} sell or
 print(f"Total capital in buy orders: {summary.total_buy_money_invested:.2f}")
 ```
 
-### 💼 `client.work_offer`
+### `client.work_offer`
 
 ```python
 await client.work_offer.get(work_offer_id: str) -> WorkOffer
@@ -408,14 +408,14 @@ print(f"Best eligible offer: {stats.top_eligible_offer}")
 print(f"Allowed wage range: {stats.allowed_range.min} – {stats.allowed_range.max}")
 ```
 
-### 👨‍🔧 `client.worker`
+### `client.worker`
 
 ```python
 await client.worker.get_workers(*, company_id=None, user_id=None) -> list[Worker]
 await client.worker.get_total_count(user_id: str) -> int
 ```
 
-### 🛡️ `client.mu`
+### `client.mu`
 
 ```python
 await client.mu.get(mu_id: str) -> MilitaryUnit
@@ -428,7 +428,7 @@ await client.mu.get_many(mu_ids: list[str], batch_size=50) -> list[MilitaryUnit]
 
 `MilitaryUnit.members` is `list[str] | None` - member user ID strings.
 
-### 🏅 `client.ranking`
+### `client.ranking`
 
 ```python
 await client.ranking.get(ranking_type: RankingType) -> list[RankingEntry]
@@ -442,7 +442,7 @@ await client.ranking.get(ranking_type: RankingType) -> list[RankingEntry]
 | User | `WEEKLY_USER_DAMAGES` `USER_DAMAGES` `USER_WEALTH` `USER_LEVEL` `USER_REFERRALS` `USER_SUBSCRIBERS` `USER_TERRAIN` `USER_PREMIUM_MONTHS` `USER_PREMIUM_GIFTS` `USER_CASES_OPENED` `USER_GEMS_PURCHASED` `USER_BOUNTY` |
 | MU | `MU_WEEKLY_DAMAGES` `MU_DAMAGES` `MU_TERRAIN` `MU_WEALTH` `MU_BOUNTY` |
 
-### 💳 `client.transaction`
+### `client.transaction`
 
 ```python
 await client.transaction.get_paginated(*, limit=10, cursor=None,
@@ -456,7 +456,7 @@ await client.transaction.collect_all(**kwargs) -> list[Transaction]
 
 `TransactionType` - `APPLICATION_FEE` `TRADING` `ITEM_MARKET` `WAGE` `DONATION` `ARTICLE_TIP` `OPEN_CASE` `CRAFT_ITEM` `DISMANTLE_ITEM` `BATTLE_LOOT`
 
-### 🏗️ `client.upgrade`
+### `client.upgrade`
 
 ```python
 await client.upgrade.get(upgrade_type: UpgradeType, *,
@@ -465,7 +465,7 @@ await client.upgrade.get(upgrade_type: UpgradeType, *,
 
 `UpgradeType` - `BUNKER` `BASE` `PACIFICATION_CENTER` `STORAGE` `AUTOMATED_ENGINE` `BREAK_ROOM` `HEADQUARTERS` `DORMITORIES`
 
-### 📝 `client.article`
+### `client.article`
 
 ```python
 await client.article.get(article_id: str) -> Article
@@ -479,7 +479,7 @@ await client.article.collect_all(type, **kwargs) -> list[ArticleLite]
 
 `ArticleType` - `DAILY` `WEEKLY` `TOP` `MY` `SUBSCRIPTIONS` `LAST`
 
-### 🔍 `client.search`
+### `client.search`
 
 ```python
 await client.search.query(search_text: str) -> SearchResults
@@ -487,20 +487,20 @@ await client.search.query(search_text: str) -> SearchResults
 
 `SearchResults.results` is a `list[SearchResult]` with fields `id`, `type`, `name`, `image`.
 
-### ⚙️ `client.game_config`
+### `client.game_config`
 
 ```python
 await client.game_config.get_dates() -> GameDates
 await client.game_config.get() -> GameConfig
 ```
 
-### 🎒 `client.inventory`
+### `client.inventory`
 
 ```python
 await client.inventory.get_equipment(user_id: str) -> list[Equipment]
 ```
 
-### 📜 `client.action_log`
+### `client.action_log`
 
 ```python
 await client.action_log.get_many(*, limit=20, cursor=None,
@@ -521,13 +521,13 @@ await client.action_log.get_all(**kwargs) -> list[ActionLog]
 | Resistance | `INCREASE_RESISTANCE` `DECREASE_RESISTANCE` |
 | Missions | `CLAIM_MISSION_XP` `CLAIM_FINISHED_MISSION_XP` |
 
-### 💰 `client.battle_loot_summary`
+### `client.battle_loot_summary`
 
 ```python
 await client.battle_loot_summary.get_by_battle_and_user(battle_id: str, user_id: str) -> BattleLootSummary
 ```
 
-### 🔨 `client.mercenary_contract_auction`
+### `client.mercenary_contract_auction`
 
 ```python
 await client.mercenary_contract_auction.get_paginated_auctions(*, country_id=None, battle_id=None, status=None, limit=10, cursor=None) -> CursorPage[MercenaryContractAuction]
@@ -535,7 +535,7 @@ await client.mercenary_contract_auction.paginate(**kwargs)                      
 await client.mercenary_contract_auction.collect_all(**kwargs) -> list[MercenaryContractAuction]
 ```
 
-### 🎪 `client.tournament`
+### `client.tournament`
 
 ```python
 await client.tournament.get_last_tournament() -> Tournament
@@ -545,7 +545,7 @@ await client.tournament.get_teams_by_tournament(tournament_id: str) -> list[Tour
 
 ---
 
-## 📄 Pagination
+## Pagination
 
 Every paginated endpoint exposes three calling patterns:
 
@@ -566,7 +566,7 @@ all_battles = await client.battle.get_active()
 
 ---
 
-## 📦 Batch Requests
+## Batch Requests
 
 > [!TIP]
 > The server enforces a hard limit of **50 procedures per batch POST**. The client handles this automatically at every level:
@@ -634,7 +634,7 @@ X-API-Key: <token>
 
 ---
 
-## ⚠️ Error Handling
+## Error Handling
 
 ```python
 from warera.exceptions import (
@@ -663,7 +663,7 @@ except WareraError as e:
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ```python
 WareraClient(
@@ -680,7 +680,7 @@ WareraClient(
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 warera/
@@ -698,7 +698,7 @@ warera/
 
 ---
 
-## 🛠️ Development
+## Development
 
 ```bash
 git clone https://github.com/bipinkrish/warera-py-api
@@ -718,13 +718,13 @@ mypy warera/
 
 ---
 
-## 📄 License
+## License
 
 MIT
 
 ---
 
-## 🙌 Credits
+## Credits
 
 [WarEraProjects](https://github.com/wareraprojects/trpc) for the undocumented endpoints and such
 
