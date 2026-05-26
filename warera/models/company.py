@@ -10,8 +10,10 @@ from .common import WareraModel
 class CompanyDates(WareraModel):
     pass
 
+
 class CompanyActiveUpgradeLevels(WareraModel):
     pass
+
 
 class Company(WareraModel):
     id: str | None = None

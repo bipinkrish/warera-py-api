@@ -25,4 +25,3 @@ class BattleLootSummary(WareraModel):
     total_money_from_contract: int
     updated_at: str
     user: str
-

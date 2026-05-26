@@ -33,6 +33,7 @@ from .client import WareraClient as _AsyncClient
 
 try:
     import nest_asyncio as _nest_asyncio
+
     _HAS_NEST_ASYNCIO = True
 except ImportError:  # nest_asyncio is optional (only needed inside Jupyter)
     _nest_asyncio = None
@@ -147,7 +148,9 @@ class WareraClient:
         self.work_offer = _wrap_resource(self._async_client.work_offer)
         self.worker = _wrap_resource(self._async_client.worker)
         self.work = _wrap_resource(self._async_client.work)
-        self.mercenary_contract_auction = _wrap_resource(self._async_client.mercenary_contract_auction)
+        self.mercenary_contract_auction = _wrap_resource(
+            self._async_client.mercenary_contract_auction
+        )
         self.mu = _wrap_resource(self._async_client.mu)
         self.mu_member = _wrap_resource(self._async_client.mu_member)
         self.party = _wrap_resource(self._async_client.party)

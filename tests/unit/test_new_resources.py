@@ -242,11 +242,7 @@ async def test_mu_member_get_by_mu_list():
 
 @pytest.mark.asyncio
 async def test_mu_member_get_by_mu_wrapped():
-    raw = {
-        "items": [
-            {"_id": "m1", "mu": "mu1", "user": "u1", "totalDamagesCount": 10}
-        ]
-    }
+    raw = {"items": [{"_id": "m1", "mu": "mu1", "user": "u1", "totalDamagesCount": 10}]}
     resource = MuMemberResource(_mock_http(raw))
     members = await resource.get_by_mu("mu1")
 
@@ -298,8 +294,16 @@ async def test_work_get_stats_by_user():
 
 @pytest.mark.asyncio
 async def test_work_get_stats_by_company():
-    raw = [{"dailyDate": "2024-01-01", "total": 500.0, "wage": 25.0,
-            "employeeProd": 300.0, "selfWork": 150.0, "automatedEngine": 50.0}]
+    raw = [
+        {
+            "dailyDate": "2024-01-01",
+            "total": 500.0,
+            "wage": 25.0,
+            "employeeProd": 300.0,
+            "selfWork": 150.0,
+            "automatedEngine": 50.0,
+        }
+    ]
     resource = WorkResource(_mock_http(raw))
     stats = await resource.get_stats_by_company("c1", days=30, timezone="Europe/Paris")
     assert len(stats) == 1
@@ -308,8 +312,16 @@ async def test_work_get_stats_by_company():
 
 @pytest.mark.asyncio
 async def test_work_get_stats_by_worker_and_company():
-    raw = [{"dailyDate": "2024-01-01", "total": 200.0, "wage": 10.0,
-            "employeeProd": 200.0, "selfWork": 0.0, "automatedEngine": 0.0}]
+    raw = [
+        {
+            "dailyDate": "2024-01-01",
+            "total": 200.0,
+            "wage": 10.0,
+            "employeeProd": 200.0,
+            "selfWork": 0.0,
+            "automatedEngine": 0.0,
+        }
+    ]
     resource = WorkResource(_mock_http(raw))
     stats = await resource.get_stats_by_worker_and_company("u1", "c1", days=7)
     assert len(stats) == 1
@@ -427,18 +439,50 @@ async def test_work_offer_get_wage_stats_empty():
 async def test_item_trading_get_public_orders_by_owner():
     raw = {
         "buyOrders": [
-            {"_id": "bo1", "user": "u1", "country": "7", "itemCode": "iron",
-             "quantity": 100, "price": 1.5, "offerAt": "2024-01-01", "type": "buy"},
+            {
+                "_id": "bo1",
+                "user": "u1",
+                "country": "7",
+                "itemCode": "iron",
+                "quantity": 100,
+                "price": 1.5,
+                "offerAt": "2024-01-01",
+                "type": "buy",
+            },
         ],
         "sellOrders": [
-            {"_id": "so1", "user": "u1", "country": "7", "itemCode": "wood",
-             "quantity": 50, "price": 0.8, "offerAt": "2024-01-01", "type": "sell"},
+            {
+                "_id": "so1",
+                "user": "u1",
+                "country": "7",
+                "itemCode": "wood",
+                "quantity": 50,
+                "price": 0.8,
+                "offerAt": "2024-01-01",
+                "type": "sell",
+            },
         ],
         "allOrders": [
-            {"_id": "bo1", "user": "u1", "country": "7", "itemCode": "iron",
-             "quantity": 100, "price": 1.5, "offerAt": "2024-01-01", "type": "buy"},
-            {"_id": "so1", "user": "u1", "country": "7", "itemCode": "wood",
-             "quantity": 50, "price": 0.8, "offerAt": "2024-01-01", "type": "sell"},
+            {
+                "_id": "bo1",
+                "user": "u1",
+                "country": "7",
+                "itemCode": "iron",
+                "quantity": 100,
+                "price": 1.5,
+                "offerAt": "2024-01-01",
+                "type": "buy",
+            },
+            {
+                "_id": "so1",
+                "user": "u1",
+                "country": "7",
+                "itemCode": "wood",
+                "quantity": 50,
+                "price": 0.8,
+                "offerAt": "2024-01-01",
+                "type": "sell",
+            },
         ],
         "totalBuyMoneyInvested": 150.0,
         "totalSellQuantities": {"wood": 50},

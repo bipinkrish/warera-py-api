@@ -214,10 +214,7 @@ async def fetch_many_by_ids(
         except WareraBatchError as exc:
             # Partial failure — return None for failed indices so callers
             # can filter them out without losing the rest of the chunk.
-            return [
-                exc.results.get(i, None)
-                for i in range(len(chunk))
-            ]
+            return [exc.results.get(i, None) for i in range(len(chunk))]
 
     chunk_results = await asyncio.gather(*[fetch_chunk(c) for c in chunks])
     return [item for sublist in chunk_results for item in sublist]

@@ -256,9 +256,7 @@ class HttpSession:
                 # Respect the server-reported rate-limit window before sending.
                 await self._rate_limit.wait_if_exhausted()
                 if self._client is None:
-                    raise RuntimeError(
-                        "HTTP client is not initialised — call __aenter__ first"
-                    )
+                    raise RuntimeError("HTTP client is not initialised — call __aenter__ first")
                 resp = await self._client.get(url, headers=self._auth_headers())
                 # Update rate-limit state from response headers.
                 self._rate_limit.update(resp.headers)
@@ -316,9 +314,7 @@ class HttpSession:
             end = start + effective
             chunks.append((procedures[start:end], inputs[start:end]))
 
-        async def _run_chunk(
-            procs: list[str], inps: list[dict[str, Any]]
-        ) -> list[Any]:
+        async def _run_chunk(procs: list[str], inps: list[dict[str, Any]]) -> list[Any]:
             proc_path = ",".join(procs)
             url = f"/{proc_path}?batch=1"
             body = {str(i): inp for i, inp in enumerate(inps)}
@@ -328,18 +324,14 @@ class HttpSession:
         chunk_results = await asyncio.gather(*[_run_chunk(p, i) for p, i in chunks])
         return [item for sublist in chunk_results for item in sublist]
 
-    async def _post_batch_with_retry(
-        self, url: str, body: dict[str, Any]
-    ) -> list[dict[str, Any]]:
+    async def _post_batch_with_retry(self, url: str, body: dict[str, Any]) -> list[dict[str, Any]]:
         result: list[dict[str, Any]] | None = None
         async for attempt in self._retrying():
             with attempt:
                 # Respect the server-reported rate-limit window before sending.
                 await self._rate_limit.wait_if_exhausted()
                 if self._client is None:
-                    raise RuntimeError(
-                        "HTTP client is not initialised — call __aenter__ first"
-                    )
+                    raise RuntimeError("HTTP client is not initialised — call __aenter__ first")
                 headers = {**self._auth_headers(), "Content-Type": "application/json"}
                 resp = await self._client.post(url, json=body, headers=headers)
                 # Update rate-limit state from response headers.
@@ -404,9 +396,7 @@ class HttpSession:
         try:
             return data["result"]["data"]
         except (KeyError, TypeError) as exc:
-            raise ValueError(
-                f"Unexpected tRPC response shape from {procedure}: {data}"
-            ) from exc
+            raise ValueError(f"Unexpected tRPC response shape from {procedure}: {data}") from exc
 
     @staticmethod
     def _unwrap_batch(raw_list: list[dict[str, Any]], procedures: list[str]) -> list[Any]:

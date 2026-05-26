@@ -225,6 +225,7 @@ async def test_http_post_batch_auto_splits_over_50():
     call_sizes: list[int] = []
 
     with respx.mock:
+
         def handler(request):
             # Count how many procedures are in this request's path.
             path = request.url.path
@@ -254,9 +255,7 @@ async def test_http_post_batch_accepts_exactly_50():
     ok_response = [{"result": {"data": i}} for i in range(50)]
 
     with respx.mock:
-        respx.post(url__startswith=BASE).mock(
-            return_value=httpx.Response(200, json=ok_response)
-        )
+        respx.post(url__startswith=BASE).mock(return_value=httpx.Response(200, json=ok_response))
         async with HttpSession(base_url=BASE) as session:
             results = await session.post_batch(
                 ["test.proc"] * 50,

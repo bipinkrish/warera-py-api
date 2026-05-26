@@ -24,11 +24,14 @@ class Battle(WareraModel):
     defender_score: float | None = None
     is_active: bool | None = None
     winner_country_id: str | None = Field(
-        default=None, validation_alias=AliasChoices("winner_country", "winnerCountry", "winner_country_id")
+        default=None,
+        validation_alias=AliasChoices("winner_country", "winnerCountry", "winner_country_id"),
     )
     start_time: str | None = None
     end_time: str | None = None
-    current_round: str | int | dict[str, Any] | None = None  # API returns a round ID string, an int, or an object
+    current_round: str | int | dict[str, Any] | None = (
+        None  # API returns a round ID string, an int, or an object
+    )
     total_rounds: int | None = None
     battle_type: str | None = None
 

@@ -51,7 +51,7 @@ def test_user_parsing_from_sample():
     """
     data = json.loads(sample_json)["result"]["data"]
     user = User.model_validate(data)
-    
+
     assert user.id == "mock_user_id"
     assert user.username == "mock_user"
     assert user.country == "mock_country_id"
@@ -62,7 +62,7 @@ def test_user_parsing_from_sample():
     assert user.rankings.user_damages.tier == "bronze"
     assert user.mu == "mock_mu_id"
     assert user.avatar_url == "https://example.com/avatar.jpg"
-    
+
     # Also ensure UserLite parses correctly and ignores extra fields
     user_lite = UserLite.model_validate(data)
     assert user_lite.id == "mock_user_id"

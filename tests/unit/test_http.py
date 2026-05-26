@@ -254,11 +254,13 @@ async def test_batch_empty_returns_empty_list():
 def test_rate_limit_state_update_from_headers():
     """RateLimitState.update() should parse numeric header values."""
     state = _RateLimitState()
-    headers = httpx.Headers({
-        "ratelimit-limit": "500",
-        "ratelimit-remaining": "490",
-        "ratelimit-reset": "43",
-    })
+    headers = httpx.Headers(
+        {
+            "ratelimit-limit": "500",
+            "ratelimit-remaining": "490",
+            "ratelimit-reset": "43",
+        }
+    )
     state.update(headers)
 
     assert state.limit == 500
@@ -270,11 +272,13 @@ def test_rate_limit_state_update_from_headers():
 def test_rate_limit_state_ignores_bad_values():
     """RateLimitState.update() should silently ignore non-numeric headers."""
     state = _RateLimitState()
-    headers = httpx.Headers({
-        "ratelimit-limit": "banana",
-        "ratelimit-remaining": "",
-        "ratelimit-reset": "not-a-number",
-    })
+    headers = httpx.Headers(
+        {
+            "ratelimit-limit": "banana",
+            "ratelimit-remaining": "",
+            "ratelimit-reset": "not-a-number",
+        }
+    )
     state.update(headers)
 
     assert state.limit is None
@@ -285,11 +289,13 @@ def test_rate_limit_state_ignores_bad_values():
 def test_rate_limit_state_no_wait_when_remaining_positive():
     """wait_if_exhausted() should return immediately when quota is available."""
     state = _RateLimitState()
-    headers = httpx.Headers({
-        "ratelimit-limit": "500",
-        "ratelimit-remaining": "490",
-        "ratelimit-reset": "43",
-    })
+    headers = httpx.Headers(
+        {
+            "ratelimit-limit": "500",
+            "ratelimit-remaining": "490",
+            "ratelimit-reset": "43",
+        }
+    )
     state.update(headers)
 
     start = time.monotonic()
@@ -306,11 +312,13 @@ def test_rate_limit_state_waits_when_exhausted():
     """wait_if_exhausted() should sleep until the reset window when remaining == 0."""
     state = _RateLimitState()
     # Simulate a window that expires in 0.1s
-    headers = httpx.Headers({
-        "ratelimit-limit": "500",
-        "ratelimit-remaining": "0",
-        "ratelimit-reset": "0",  # already expired — but _reset_at will be set to now+0
-    })
+    headers = httpx.Headers(
+        {
+            "ratelimit-limit": "500",
+            "ratelimit-remaining": "0",
+            "ratelimit-reset": "0",  # already expired — but _reset_at will be set to now+0
+        }
+    )
     state.update(headers)
     # Force reset_at to be ~0.15s from now so we can observe the sleep
     state._reset_at = time.monotonic() + 0.15
