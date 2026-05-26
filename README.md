@@ -11,7 +11,7 @@ async with WareraClient(api_key="YOUR_KEY") as client:
 
 ## Features
 
-- **Full API coverage** - all endpoints across 29 resource namespaces
+- **Full API coverage** - all endpoints across 32 resource namespaces
 - **Typed** - Pydantic v2 models for every request and response
 - **Async-first** - built on `httpx.AsyncClient`; sync shim included
 - **Cursor pagination** - transparent `paginate()` generator and `collect_all()` helper
@@ -140,9 +140,13 @@ await client.company.get_recommended_regions(item_code, *, include_deposit=True)
 await client.company.get_production_bonus(company_id: str) -> CompanyProductionBonus
 ```
 
-**`RecommendedRegion`** - `region_id`, `bonus`, `deposit_bonus`, `ethic_deposit_bonus`, `strategic_bonus`, `ethic_specialization_bonus`, `tax_percent`, `deposit_end_at`, `item_code`
+<details><summary><b><code>RecommendedRegion</code></b> fields</summary>
+<code>region_id</code>, <code>bonus</code>, <code>deposit_bonus</code>, <code>ethic_deposit_bonus</code>, <code>strategic_bonus</code>, <code>ethic_specialization_bonus</code>, <code>tax_percent</code>, <code>deposit_end_at</code>, <code>item_code</code>
+</details>
 
-**`CompanyProductionBonus`** - `strategic_bonus`, `deposit_bonus`, `ethic_specialization_bonus`, `ethic_deposit_bonus`, `total`
+<details><summary><b><code>CompanyProductionBonus</code></b> fields</summary>
+<code>strategic_bonus</code>, <code>deposit_bonus</code>, <code>ethic_specialization_bonus</code>, <code>ethic_deposit_bonus</code>, <code>total</code>
+</details>
 
 ```python
 regions = await client.company.get_recommended_regions("iron", include_deposit=True)
@@ -178,9 +182,13 @@ await client.party.collect_all(**kwargs) -> list[Party]
 await client.party.paginate(**kwargs)                              # async generator
 ```
 
-**`Party`** - `id`, `name`, `description`, `country_id`, `region_id`, `leader_id`, `council_members`, `members`, `ethics` (`PartyEthics`), `avatar_url`, `treasurer`, `primary_winner`, `created_at`, `updated_at`
+<details><summary><b><code>Party</code></b> fields</summary>
+<code>id</code>, <code>name</code>, <code>description</code>, <code>country</code>, <code>country_id</code>, <code>region</code>, <code>region_id</code>, <code>leader</code>, <code>leader_id</code>, <code>council_members</code>, <code>members</code>, <code>ethics</code> (<code>PartyEthics</code>), <code>avatar_url</code>, <code>treasurer</code>, <code>primary_winner</code>, <code>created_at</code>, <code>updated_at</code>
+</details>
 
-**`PartyEthics`** - `militarism`, `isolationism`, `imperialism`, `industrialism` (all `float`)
+<details><summary><b><code>PartyEthics</code></b> fields</summary>
+<code>militarism</code>, <code>isolationism</code>, <code>imperialism</code>, <code>industrialism</code> (all <code>float</code>)
+</details>
 
 ```python
 parties = await client.party.get_by_country("7")
@@ -198,7 +206,9 @@ await client.donation.collect_all(**kwargs) -> list[Donation]
 await client.donation.paginate(**kwargs)                           # async generator
 ```
 
-**`DonationTotals`** - `total_amount` (float), `donor_count` (int)
+<details><summary><b><code>DonationTotals</code></b> fields</summary>
+<code>total_amount</code> (float), <code>donor_count</code> (int)
+</details>
 
 ```python
 totals = await client.donation.get_totals(mu_id="my_mu_id")
@@ -214,9 +224,13 @@ await client.election.collect_all(**kwargs) -> list[Election]
 await client.election.paginate(**kwargs)                           # async generator
 ```
 
-**`Election`** - `id`, `country`, `is_active`, `type`, `candidates` (list of `ElectionCandidate`), `votes_start_at`, `votes_end_at`, `votes_count`, `elected_count`, `status`, `votes` (dict)
+<details><summary><b><code>Election</code></b> fields</summary>
+<code>id</code>, <code>country</code>, <code>elected_candidates</code>, <code>is_active</code>, <code>type</code>, <code>candidates</code> (list of <code>ElectionCandidate</code>), <code>votes_start_at</code>, <code>votes_end_at</code>, <code>votes_count</code>, <code>elected_count</code>, <code>created_at</code>, <code>status</code>, <code>votes</code> (dict)
+</details>
 
-**`ElectionCandidate`** - `user`, `vote_count`, `article`, `party`, `is_elected`
+<details><summary><b><code>ElectionCandidate</code></b> fields</summary>
+<code>user</code>, <code>vote_count</code>, <code>article</code>, <code>party</code>, <code>is_elected</code>
+</details>
 
 ```python
 elections = await client.election.get_by_country("7")
@@ -244,7 +258,9 @@ print(f"Average sword quality: {avg:.1f}")
 await client.mu_member.get_by_mu(mu_id: str) -> list[MuMember]
 ```
 
-**`MuMember`** - `id`, `mu`, `user`, `total_damages_count`, `monthly_damages_count`, `weekly_damages_count`, `total_help_count`, `monthly_help_count`, `weekly_help_count`, `created_at`, `updated_at`
+<details><summary><b><code>MuMember</code></b> fields</summary>
+<code>id</code>, <code>mu</code>, <code>user</code>, <code>total_damages_count</code>, <code>monthly_damages_count</code>, <code>weekly_damages_count</code>, <code>total_help_count</code>, <code>monthly_help_count</code>, <code>weekly_help_count</code>, <code>created_at</code>, <code>updated_at</code>
+</details>
 
 ```python
 members = await client.mu_member.get_by_mu("my_mu_id")
@@ -263,7 +279,9 @@ await client.work.get_stats_by_worker_and_company(worker_id, company_id, *, days
 
 `timezone` accepts any IANA timezone string (e.g. `"Europe/Paris"`). Daily buckets are grouped in that timezone so midnight boundaries align correctly.
 
-**`WorkStats`** - `daily_date` (str), `total`, `wage`, `employee_prod`, `self_work`, `automated_engine` (all float)
+<details><summary><b><code>WorkStats</code></b> fields</summary>
+<code>daily_date</code> (str), <code>total</code>, <code>wage</code>, <code>employee_prod</code>, <code>self_work</code>, <code>automated_engine</code> (all float)
+</details>
 
 ```python
 stats = await client.work.get_stats_by_company("my_company_id", days=7, timezone="UTC")
@@ -357,7 +375,9 @@ await client.item_trading.get_offer(item_offer_id: str) -> ItemOffer
 await client.item_trading.get_public_orders_by_owner(country_id: str) -> PublicOrdersSummary
 ```
 
-**`PublicOrdersSummary`** - `buy_orders` (list), `sell_orders` (list), `all_orders` (list), `total_buy_money_invested` (float), `total_sell_quantities` (dict[str, float])
+<details><summary><b><code>PublicOrdersSummary</code></b> fields</summary>
+<code>buy_orders</code> (list), <code>sell_orders</code> (list), <code>all_orders</code> (list), <code>total_buy_money_invested</code> (float), <code>total_sell_quantities</code> (dict[str, float])
+</details>
 
 ```python
 summary = await client.item_trading.get_public_orders_by_owner("7")
@@ -377,7 +397,9 @@ await client.work_offer.collect_all(**kwargs) -> list[WorkOffer]
 await client.work_offer.get_wage_stats(*, energy, production, citizenship) -> WageStats
 ```
 
-**`WageStats`** - `allowed_range` (`WageRange`: `min`, `max`, `average`), `top_offer` (float), `top_eligible_offer` (float), `top_eligible_offers` (list)
+<details><summary><b><code>WageStats</code></b> fields</summary>
+<code>allowed_range</code> (<code>WageRange</code>: <code>min</code>, <code>max</code>, <code>average</code>), <code>top_offer</code> (float), <code>top_eligible_offer</code> (float), <code>top_eligible_offers</code> (list)
+</details>
 
 ```python
 stats = await client.work_offer.get_wage_stats(
@@ -501,6 +523,28 @@ await client.action_log.get_all(**kwargs) -> list[ActionLog]
 | Profile | `CHANGED_USERNAME` `CHANGED_CITIZENSHIP` `CHANGED_DESCRIPTION` |
 | Resistance | `INCREASE_RESISTANCE` `DECREASE_RESISTANCE` |
 | Missions | `CLAIM_MISSION_XP` `CLAIM_FINISHED_MISSION_XP` |
+
+### `client.battle_loot_summary`
+
+```python
+await client.battle_loot_summary.get_by_battle_and_user(battle_id: str, user_id: str) -> BattleLootSummary
+```
+
+### `client.mercenary_contract_auction`
+
+```python
+await client.mercenary_contract_auction.get_paginated_auctions(*, country_id=None, battle_id=None, status=None, limit=10, cursor=None) -> CursorPage[MercenaryContractAuction]
+await client.mercenary_contract_auction.paginate(**kwargs)                         # async generator
+await client.mercenary_contract_auction.collect_all(**kwargs) -> list[MercenaryContractAuction]
+```
+
+### `client.tournament`
+
+```python
+await client.tournament.get_last_tournament() -> Tournament
+await client.tournament.get_team_by_id(tournament_team_id: str) -> TournamentTeam
+await client.tournament.get_teams_by_tournament(tournament_id: str) -> list[TournamentTeam]
+```
 
 ---
 
@@ -650,8 +694,8 @@ warera/
 ├── _http.py             # httpx session, GET/POST, rate-limit headers, retry
 ├── _pagination.py       # paginate(), collect_all()
 ├── _batch.py            # BatchSession, BatchItem, fetch_many_by_ids
-├── models/              # Pydantic response models (28 files)
-└── resources/           # Resource classes (29 files)
+├── models/              # Pydantic response models (31 files)
+└── resources/           # Resource classes (32 files)
 ```
 
 ---
