@@ -21,6 +21,9 @@ class TradingOrder(WareraModel):
     user_id: str | None = None
     created_at: str | None = None
     expires_at: str | None = None
+    offer_at: str | None = None
+    type: str | None = None
+    user: str | None = None
 
 
 class ItemOffer(WareraModel):
@@ -32,3 +35,6 @@ class ItemOffer(WareraModel):
     country_id: str | None = None
     region_id: str | None = None
     created_at: str | None = None
+    offer_at: str | None = None
+    type: str | None = None
+    user: str | None = None

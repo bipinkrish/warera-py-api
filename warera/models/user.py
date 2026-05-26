@@ -5,6 +5,7 @@ from .common import WareraModel
 
 class UserLiteDates(WareraModel):
     last_connection_at: str | None = None
+    last_taking_control_at: str | None = None
 
 
 class UserDates(UserLiteDates):
@@ -19,6 +20,7 @@ class UserDates(UserLiteDates):
     last_daily_reward_claimed_at: str | None = None
     last_skills_reset_at: str | None = None
     last_help_asked_at: str | None = None
+    last_citizenship_change_at: str | None = None
 
 
 class UserLeveling(WareraModel):
@@ -106,6 +108,10 @@ class UserRankings(WareraModel):
     user_terrain: RankingDetail | None = None
     user_cases_opened: RankingDetail | None = None
     user_bounty: RankingDetail | None = None
+    user_gems_purchased: RankingDetail | None = None
+    user_premium_gifts: RankingDetail | None = None
+    user_premium_months: RankingDetail | None = None
+    user_subscribers: RankingDetail | None = None
 
 
 class UserEquipment(WareraModel):
@@ -115,6 +121,7 @@ class UserEquipment(WareraModel):
     boots: str | None = None
     pants: str | None = None
     gloves: str | None = None
+    weapon: str | None = None
 
 
 class UserMissionsClaimedAt(WareraModel):
@@ -127,6 +134,10 @@ class UserMissions(WareraModel):
     claimed_at: UserMissionsClaimedAt | None = None
     rerolled_daily_missions: int | None = None
     rerolled_weekly_missions: int | None = None
+
+
+class UserInfos(WareraModel):
+    pass
 
 
 class UserLite(WareraModel):
@@ -145,6 +156,8 @@ class UserLite(WareraModel):
     leveling: UserLeveling | None = None
     stats: UserStats | None = None
     rankings: UserRankings | None = None
+    infos: UserInfos | None = None
+    skills: UserSkills | None = None
 
 
 class User(UserLite):
@@ -155,3 +168,7 @@ class User(UserLite):
     party: str | None = None
     company: str | None = None
     mu_max_level_rewarded: int | None = None
+    available_color_schemes: list[str] | None = None
+    equipped_skin_keys: list[str] | None = None
+    finished_tours: list[str] | None = None
+    should_update_profile: bool | None = None
