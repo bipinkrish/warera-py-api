@@ -23,7 +23,6 @@ async with WareraClient(api_key="YOUR_KEY") as client:
 - **Smart batch splitting** — any batch larger than the server's hard limit of 50 is automatically split and fired concurrently; no manual chunking needed.
 - **Adaptive rate limiting** — reads `ratelimit-remaining` / `ratelimit-reset` response headers and sleeps exactly as long as the server says.
 - **Resilient** — automatic retry with exponential backoff on 429 and 5xx errors.
-- **War Era Gateway** — out-of-the-box support for the community Gateway via `use_gateway=True`.
 - **Optional auth** — `X-API-Key` gives higher rate limits; works anonymously too.
 
 ## Installation
@@ -73,20 +72,6 @@ client = WareraClient(api_key="YOUR_KEY")
 user    = client.user.get_by_id("12345")
 prices  = client.item_trading.get_prices()
 battles = client.battle.get_active()   # collects all pages automatically
-```
-
----
-
-## War Era Gateway
-
-The community-run [War Era Gateway](https://gateway.warerastats.io) offers built-in caching, request deduplication, and a robust database backend. It serves as a drop-in replacement for the official API but offers much higher efficiency, making it perfect for heavy scrapers and tools.
-
-Native support is built right into the Python client! Simply set `use_gateway=True`:
-
-```python
-async with WareraClient(use_gateway=True) as client:
-    # Requests are now automatically routed through gateway.warerastats.io
-    prices = await client.item_trading.get_prices()
 ```
 
 ---

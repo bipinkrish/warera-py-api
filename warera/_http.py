@@ -50,7 +50,6 @@ from .exceptions import (
 
 # Public constant so client.py can import it instead of duplicating the string.
 DEFAULT_BASE_URL = "https://api2.warera.io/trpc"
-GATEWAY_BASE_URL = "https://gateway.warerastats.io/trpc"
 _ENV_KEY = "WARERA_API_KEY"
 
 

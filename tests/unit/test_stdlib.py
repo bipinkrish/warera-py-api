@@ -810,24 +810,6 @@ class TestClientAssembly(unittest.TestCase):
         r = repr(client)
         self.assertIn("authenticated=False", r)
 
-    def test_use_gateway_override(self):
-        from warera.client import WareraClient  # noqa: PLC0415
-        from warera._http import GATEWAY_BASE_URL, DEFAULT_BASE_URL  # noqa: PLC0415
-
-        # 1. use_gateway=True overrides DEFAULT_BASE_URL
-        # Note: We must patch HttpSession.ensure_lock or similar if it requires asyncio,
-        # but WareraClient.__init__ doesn't await anything. It just instantiates HttpSession.
-        client1 = WareraClient(use_gateway=True)
-        self.assertEqual(client1._http._base_url, GATEWAY_BASE_URL)
-
-        # 2. explicit base_url wins even if use_gateway=True
-        client2 = WareraClient(use_gateway=True, base_url="https://custom")
-        self.assertEqual(client2._http._base_url, "https://custom")
-
-        # 3. default is DEFAULT_BASE_URL
-        client3 = WareraClient()
-        self.assertEqual(client3._http._base_url, DEFAULT_BASE_URL)
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 9. Sync shim proxy mechanics
