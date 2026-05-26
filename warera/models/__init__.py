@@ -1,6 +1,7 @@
 from .action_log import ActionLog
 from .article import Article, ArticleLite
 from .battle import Battle, BattleLive
+from .battle_loot_summary import BattleLootPoolItem, BattleLootSummary
 from .battle_order import BattleOrder
 from .battle_ranking import BattleRankingEntry
 from .common import CursorPage, WareraModel
@@ -13,6 +14,7 @@ from .game_config import GameConfig, GameDates
 from .government import Government, GovernmentMember
 from .inventory import Equipment
 from .item_trading import ItemOffer, ItemPrice, TradingOrder
+from .mercenary_contract_auction import MercenaryContractAuction, MercenaryContractAuctionBid
 from .military_unit import MilitaryUnit
 from .mu_member import MuMember
 from .party import Party, PartyEthics
@@ -20,6 +22,13 @@ from .ranking import RankingEntry
 from .region import Region
 from .round_ import Hit, Round
 from .search import SearchResult, SearchResults
+from .tournament import (
+    Tournament,
+    TournamentMatch,
+    TournamentRegistered,
+    TournamentRound,
+    TournamentTeam,
+)
 from .transaction import Transaction
 from .upgrade import Upgrade
 from .user import User, UserLite
@@ -33,6 +42,8 @@ __all__ = [
     "ArticleLite",
     "Battle",
     "BattleLive",
+    "BattleLootPoolItem",
+    "BattleLootSummary",
     "BattleOrder",
     "BattleRankingEntry",
     "Company",
@@ -51,6 +62,8 @@ __all__ = [
     "Hit",
     "ItemOffer",
     "ItemPrice",
+    "MercenaryContractAuction",
+    "MercenaryContractAuctionBid",
     "MilitaryUnit",
     "MuMember",
     "Party",
@@ -60,6 +73,11 @@ __all__ = [
     "Round",
     "SearchResult",
     "SearchResults",
+    "Tournament",
+    "TournamentMatch",
+    "TournamentRegistered",
+    "TournamentRound",
+    "TournamentTeam",
     "TradingOrder",
     "Transaction",
     "Upgrade",
