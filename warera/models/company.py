@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import AliasChoices, Field
 
 from .common import WareraModel
 
-
-from typing import Any
 
 class CompanyDates(WareraModel):
     pass
