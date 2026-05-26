@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import Any
 
 from ._batch import MAX_BATCH_SIZE, BatchSession
-from ._http import DEFAULT_BASE_URL, HttpSession
+from ._http import DEFAULT_BASE_URL, GATEWAY_BASE_URL, HttpSession
 from .resources.action_log import ActionLogResource
 from .resources.article import ArticleResource
 from .resources.battle import BattleResource
@@ -109,6 +109,7 @@ class WareraClient:
         api_key: str | None = None,
         *,
         base_url: str = DEFAULT_BASE_URL,
+        use_gateway: bool = False,
         timeout: float = 10.0,
         max_retries: int = 3,
         retry_backoff_factor: float = 0.5,
@@ -120,11 +121,18 @@ class WareraClient:
                                   environment variable. Omitting auth works but gives
                                   lower rate limits.
             base_url:             Override the API base URL (useful for testing).
+            use_gateway:          If True, uses the community gateway.warerastats.io
+                                  for built-in caching, batching, and higher rate limits.
             timeout:              HTTP request timeout in seconds.
             max_retries:          Max retry attempts for 429 / 5xx errors.
             retry_backoff_factor: Multiplier for exponential backoff between retries.
             batch_size:           Default max procedures per batch POST.
         """
+        # Override base URL if the user requested the gateway, unless they
+        # also explicitly passed a custom base_url (rare, but respect explicit kwargs).
+        if use_gateway and base_url == DEFAULT_BASE_URL:
+            base_url = GATEWAY_BASE_URL
+
         self._http = HttpSession(
             api_key=api_key,
             base_url=base_url,
