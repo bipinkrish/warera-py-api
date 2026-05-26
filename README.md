@@ -726,6 +726,4 @@ MIT
 
 ## Credits
 
-[WarEraProjects](https://github.com/wareraprojects/trpc) for the undocumented endpoints and such
-
-[Kore-rep](https://github.com/Kore-rep) for the rate-limiting suggestion
+See the [**CREDITS.md**](CREDITS.md) file for a comprehensive list of all code contributors and community researchers who made this library possible!
