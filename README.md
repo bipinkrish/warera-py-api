@@ -726,4 +726,7 @@ MIT
 
 ## Credits
 
-See the [**CREDITS.md**](CREDITS.md) file for a comprehensive list of all code contributors and community researchers who made this library possible!
+- **Bipin Krishnan (`bipinkrish` / `Bipin`)**: Initial architecture, core client implementation, rate-limiting foundations, and testing frameworks.
+- **PAIN (`PAIN「ᴀᴋᴀᴛsᴜᴋɪ」` / `CrucifiedPain`)**: Comprehensive expansion of Pydantic schemas, API parity updates, documentation overhauls, and feature additions.
+- **[WarEraProjects](https://github.com/wareraprojects/trpc)**: Instrumental in reverse-engineering undocumented API endpoints and the batch-request wire protocol.
+- **[Kore-rep](https://github.com/Kore-rep)**: Suggested the implementation of the adaptive rate-limiting engine.
