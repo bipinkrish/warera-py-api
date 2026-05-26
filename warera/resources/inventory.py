@@ -28,7 +28,7 @@ class InventoryResource(BaseResource):
             raw_items = raw.get("items", raw.get("data", None))
             if isinstance(raw_items, list):
                 return [Equipment.model_validate(r) for r in raw_items]
-            
+
             # If the data is mapped by slot (e.g. {"weapon": {...}, "helmet": {...}})
             actual_data = raw_items if raw_items is not None else raw
             if isinstance(actual_data, dict):
@@ -42,11 +42,11 @@ class InventoryResource(BaseResource):
                             mapped["name"] = item_data["code"]
                         equipments.append(Equipment.model_validate(mapped))
                     elif isinstance(item_data, str):
-                        equipments.append(Equipment.model_validate({
-                            "slot": slot_name,
-                            "item_code": item_data,
-                            "name": item_data
-                        }))
+                        equipments.append(
+                            Equipment.model_validate(
+                                {"slot": slot_name, "item_code": item_data, "name": item_data}
+                            )
+                        )
                 return equipments
 
             # Single equipment object — wrap in list

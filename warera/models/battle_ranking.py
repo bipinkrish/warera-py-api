@@ -8,7 +8,8 @@ from .common import WareraModel
 class BattleRankingEntry(WareraModel):
     rank: int | None = None
     entity_id: str | None = Field(
-        default=None, validation_alias=AliasChoices("user", "country", "mu", "entityId", "entity_id")
+        default=None,
+        validation_alias=AliasChoices("user", "country", "mu", "entityId", "entity_id"),
     )
     entity_type: str | None = None  # "user" | "country" | "mu"
     name: str | None = None

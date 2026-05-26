@@ -16,3 +16,5 @@ class Transaction(WareraModel):
     mu_id: str | None = None
     country_id: str | None = None
     party_id: str | None = None
+    updated_at: str | None = None
+    user_id: str | None = None

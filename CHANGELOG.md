@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.1.9] — 2026-05-26
+
+### New endpoints (1:1 Parity with TypeScript Client)
+
+**BattleLootSummary**
+- `client.battle_loot_summary.get_by_battle_and_user(battle_id, user_id)` — `battleLootSummary.getByBattleAndUser`
+
+**MercenaryContractAuction**
+- `client.mercenary_contract_auction.get_paginated_auctions(...)` — `mercenaryContractAuction.getPaginatedAuctions`
+- `client.mercenary_contract_auction.collect_all(...)` / `client.mercenary_contract_auction.paginate(...)` — full autopagination helpers
+
+**Tournament**
+- `client.tournament.get_last_tournament()` — `tournament.getLastTournament`
+- `client.tournament.get_team_by_id(tournament_team_id)` — `tournamentTeam.getById`
+- `client.tournament.get_teams_by_tournament(tournament_id)` — `tournamentTeam.getByTournamentId`
+
+### Synchronized Pydantic Models
+Massive update to sync all existing models with the latest TRPC schema. Added all missing properties (fully backwards compatible, leveraging `extra="allow"`):
+- **Article**: Added `author`, `is_deleted`, `is_published`, `published_at`, `stats`.
+- **Company**: Added `active_upgrade_levels`, `concrete_invested`, `dates`, `estimated_value`, `is_full`, `item_code`, `moved_up_at`, `region`, `updated_at`, `user`, `worker_count`, `workers`.
+- **Government**: Added `country`.
+- **Item Trading**: Added `offer_at`, `type`, `user` to `TradingOrder` and `ItemOffer`.
+- **Military Unit**: Added `active_upgrade_levels`, `avatar_url`, `rankings`, `region`, `roles`, `updated_at`, `user`.
+- **Party**: Added `country`, `leader`, `region`.
+- **Transaction**: Added `updated_at`, `user_id`.
+- **User**: Massive update adding all progression and state tracking objects: `infos`, `skills`, `UserDates.last_citizenship_change_at`, `UserLiteDates.last_taking_control_at`, `UserRankings` (gems, premium tracking), `UserEquipment.weapon`, `available_color_schemes`, `equipped_skin_keys`, `finished_tours`, `should_update_profile`.
+
 ## [0.1.8] — 2026-05-10
 
 ### New endpoints (from TRPC wrapper)

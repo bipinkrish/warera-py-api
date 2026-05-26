@@ -12,6 +12,7 @@ class GovernmentMember(WareraModel):
 
 
 class Government(WareraModel):
+    country: str | None = None
     country_id: str | None = None
     president: str | None = None
     vice_president: str | None = None

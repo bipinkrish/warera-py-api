@@ -33,6 +33,7 @@ from .client import WareraClient as _AsyncClient
 
 try:
     import nest_asyncio as _nest_asyncio
+
     _HAS_NEST_ASYNCIO = True
 except ImportError:  # nest_asyncio is optional (only needed inside Jupyter)
     _nest_asyncio = None
@@ -138,6 +139,7 @@ class WareraClient:
         self.government = _wrap_resource(self._async_client.government)
         self.region = _wrap_resource(self._async_client.region)
         self.battle = _wrap_resource(self._async_client.battle)
+        self.battle_loot_summary = _wrap_resource(self._async_client.battle_loot_summary)
         self.battle_ranking = _wrap_resource(self._async_client.battle_ranking)
         self.battle_order = _wrap_resource(self._async_client.battle_order)
         self.round = _wrap_resource(self._async_client.round)
@@ -145,7 +147,16 @@ class WareraClient:
         self.item_trading = _wrap_resource(self._async_client.item_trading)
         self.work_offer = _wrap_resource(self._async_client.work_offer)
         self.worker = _wrap_resource(self._async_client.worker)
+        self.work = _wrap_resource(self._async_client.work)
+        self.mercenary_contract_auction = _wrap_resource(
+            self._async_client.mercenary_contract_auction
+        )
         self.mu = _wrap_resource(self._async_client.mu)
+        self.mu_member = _wrap_resource(self._async_client.mu_member)
+        self.party = _wrap_resource(self._async_client.party)
+        self.donation = _wrap_resource(self._async_client.donation)
+        self.election = _wrap_resource(self._async_client.election)
+        self.game_stat = _wrap_resource(self._async_client.game_stat)
         self.ranking = _wrap_resource(self._async_client.ranking)
         self.transaction = _wrap_resource(self._async_client.transaction)
         self.upgrade = _wrap_resource(self._async_client.upgrade)
@@ -154,6 +165,7 @@ class WareraClient:
         self.game_config = _wrap_resource(self._async_client.game_config)
         self.inventory = _wrap_resource(self._async_client.inventory)
         self.action_log = _wrap_resource(self._async_client.action_log)
+        self.tournament = _wrap_resource(self._async_client.tournament)
 
     def batch(self, batch_size: int | None = None) -> _SyncBatchSession:
         return _SyncBatchSession(self._async_client.batch(batch_size))

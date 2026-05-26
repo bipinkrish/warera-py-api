@@ -99,5 +99,8 @@ class WorkResource(BaseResource):
             return [WorkStats.model_validate(item) for item in raw]
         if isinstance(raw, dict):
             items = raw.get("items", raw.get("data", []))
-            return [WorkStats.model_validate(item) for item in (items if isinstance(items, list) else [])]
+            return [
+                WorkStats.model_validate(item)
+                for item in (items if isinstance(items, list) else [])
+            ]
         return []

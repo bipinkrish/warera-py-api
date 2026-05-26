@@ -31,6 +31,7 @@ from ._http import DEFAULT_BASE_URL, HttpSession
 from .resources.action_log import ActionLogResource
 from .resources.article import ArticleResource
 from .resources.battle import BattleResource
+from .resources.battle_loot_summary import BattleLootSummaryResource
 from .resources.battle_order import BattleOrderResource
 from .resources.battle_ranking import BattleRankingResource
 from .resources.company import CompanyResource
@@ -43,6 +44,7 @@ from .resources.game_stat import GameStatResource
 from .resources.government import GovernmentResource
 from .resources.inventory import InventoryResource
 from .resources.item_trading import ItemTradingResource
+from .resources.mercenary_contract_auction import MercenaryContractAuctionResource
 from .resources.mu import MUResource
 from .resources.mu_member import MuMemberResource
 from .resources.party import PartyResource
@@ -50,6 +52,7 @@ from .resources.ranking import RankingResource
 from .resources.region import RegionResource
 from .resources.round_ import RoundResource
 from .resources.search import SearchResource
+from .resources.tournament import TournamentResource
 from .resources.transaction import TransactionResource
 from .resources.upgrade import UpgradeResource
 from .resources.user import UserResource
@@ -96,6 +99,9 @@ class WareraClient:
         client.game_config   → GameConfigResource
         client.inventory     → InventoryResource
         client.action_log    → ActionLogResource
+        client.battle_loot_summary → BattleLootSummaryResource
+        client.mercenary_contract_auction → MercenaryContractAuctionResource
+        client.tournament    → TournamentResource
     """
 
     def __init__(
@@ -136,6 +142,7 @@ class WareraClient:
         self.government = GovernmentResource(self._http)
         self.region = RegionResource(self._http)
         self.battle = BattleResource(self._http)
+        self.battle_loot_summary = BattleLootSummaryResource(self._http)
         self.battle_ranking = BattleRankingResource(self._http)
         self.battle_order = BattleOrderResource(self._http)
         self.round = RoundResource(self._http)
@@ -144,6 +151,7 @@ class WareraClient:
         self.work_offer = WorkOfferResource(self._http)
         self.worker = WorkerResource(self._http)
         self.work = WorkResource(self._http)
+        self.mercenary_contract_auction = MercenaryContractAuctionResource(self._http)
         self.mu = MUResource(self._http)
         self.mu_member = MuMemberResource(self._http)
         self.party = PartyResource(self._http)
@@ -158,6 +166,7 @@ class WareraClient:
         self.game_config = GameConfigResource(self._http)
         self.inventory = InventoryResource(self._http)
         self.action_log = ActionLogResource(self._http)
+        self.tournament = TournamentResource(self._http)
 
     # ------------------------------------------------------------------
     # Lifecycle

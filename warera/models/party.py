@@ -19,12 +19,15 @@ class Party(WareraModel):
 
     name: str | None = None
     description: str | None = None
+    country: str | None = None
     country_id: str | None = Field(
         default=None, validation_alias=AliasChoices("country", "countryId", "country_id")
     )
+    region: str | None = None
     region_id: str | None = Field(
         default=None, validation_alias=AliasChoices("region", "regionId", "region_id")
     )
+    leader: str | None = None
     leader_id: str | None = Field(
         default=None, validation_alias=AliasChoices("leader", "leaderId", "leader_id")
     )

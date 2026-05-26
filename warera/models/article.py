@@ -3,6 +3,10 @@ from __future__ import annotations
 from .common import WareraModel
 
 
+class ArticleStats(WareraModel):
+    pass
+
+
 class Article(WareraModel):
     id: str | None = None
     title: str | None = None
@@ -17,6 +21,11 @@ class Article(WareraModel):
     comments: int | None = None
     image: str | None = None
     created_at: str | None = None
+    author: str | None = None
+    is_deleted: bool | None = None
+    is_published: bool | None = None
+    published_at: str | None = None
+    stats: ArticleStats | None = None
     updated_at: str | None = None
 
 
@@ -31,4 +40,10 @@ class ArticleLite(WareraModel):
     score: int | None = None
     views: int | None = None
     image: str | None = None
-    created_at: str | None = None
+    author: str | None = None
+    content: str | None = None
+    is_deleted: bool | None = None
+    is_published: bool | None = None
+    published_at: str | None = None
+    stats: ArticleStats | None = None
+    updated_at: str | None = None
